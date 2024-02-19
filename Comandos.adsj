@@ -1,0 +1,2 @@
+mkdisk -Size=1000 -unit=k -path=/home/taro/Escritorio/Tarea2/Disk1.dsk
+rep
