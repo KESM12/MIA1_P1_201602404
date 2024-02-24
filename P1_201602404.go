@@ -16,6 +16,8 @@ import (
 	"time"
 )
 
+var diskCounter = 0
+
 type mbr = struct {
 	Mbr_tamano         [100]byte
 	Mbr_fecha_creacion [100]byte
@@ -28,23 +30,72 @@ type mbr = struct {
 }
 
 type partition = struct {
-	Part_mount       [100]byte //el vato lo usa como si fuera status
+	Part_status      [100]byte
 	Part_type        [100]byte
 	Part_fit         [100]byte
 	Part_start       [100]byte
-	Part_s           [100]byte
+	Part_size        [100]byte
 	Part_name        [100]byte
 	Part_correlative [100]byte
 	Part_id          [100]byte
 }
 
 type Ebr = struct {
-	Ebr_mount [100]byte
-	Ebr_fit   [100]byte
-	Ebr_start [100]byte
-	Ebr_s     [100]byte
-	Ebr_next  [100]byte
-	Ebr_name  [100]byte
+	Part_mount [100]byte
+	Part_fit   [100]byte
+	Part_start [100]byte
+	Part_s     [100]byte
+	Part_next  [100]byte
+	Part_name  [100]byte
+}
+
+type super_bloque = struct {
+	S_filesystem_type   [100]byte
+	S_inodes_count      [100]byte
+	S_blocks_count      [100]byte
+	S_free_blocks_count [100]byte
+	S_free_inodes_count [100]byte
+	S_mtime             [100]byte
+	S_mnt_count         [100]byte
+	S_magic             [100]byte
+	S_inode_size        [100]byte
+	S_block_size        [100]byte
+	S_firts_ino         [100]byte
+	S_first_blo         [100]byte
+	S_bm_inode_start    [100]byte
+	S_bm_block_start    [100]byte
+	S_inode_start       [100]byte
+	S_block_start       [100]byte
+}
+
+type inodo = struct {
+	I_uid   [100]byte
+	I_gid   [100]byte
+	I_size  [100]byte
+	I_atime [100]byte
+	I_ctime [100]byte
+	I_mtime [100]byte
+	I_block [100]byte
+	I_type  [100]byte
+	I_perm  [100]byte
+}
+
+type bloque_archivo = struct {
+	B_content [100]byte
+}
+
+type content = struct {
+	B_name  [100]byte
+	B_inodo [100]byte
+}
+
+// Bloque de apuntadores.
+type apuntadores = struct {
+	B_pointers [100]byte
+}
+
+func main() {
+	analizar()
 }
 
 func analizar() {
@@ -96,6 +147,9 @@ func ejecutar_comando(commandArray []string) {
 	if data == "mkdisk" {
 		mkdisk(commandArray)
 		fmt.Println()
+	} else if data == "fdisk" {
+		fdisk(commandArray)
+		fmt.Println()
 	} else if data == "rep" {
 		mostrar_mkdisk()
 		fmt.Println()
@@ -105,9 +159,6 @@ func ejecutar_comando(commandArray []string) {
 	} else if data == "pause" {
 		pause()
 		fmt.Println()
-	} else if data == "ebr" {
-		ebr(commandArray)
-		fmt.Print()
 	} else {
 		fmt.Println("Comando no fue reconocido...")
 	}
@@ -117,11 +168,12 @@ func mkdisk(commandArray []string) {
 	val_size := 0
 	val_fit := ""
 	val_unit := ""
-	val_path := ""
+	//val_path := ""
+
 	band_size := false
 	band_fit := false
 	band_unit := false
-	band_path := false
+	band_path := true
 	band_error := false
 
 	for i := 1; i < len(commandArray); i++ {
@@ -196,19 +248,24 @@ func mkdisk(commandArray []string) {
 				break
 			}
 
-		case strings.Contains(data, "path="):
-			if band_path {
-				fmt.Println("Parametro -path ya fue ingresado...")
-				band_error = true
-				break
-			}
-
-			band_path = true
-
-			val_path = strings.Replace(val_data, "\"", "", 2)
 		default:
 			fmt.Println("Parametro no valido...")
 		}
+	}
+
+	// Obtenemos la letra del abecedario según el contador global diskCounter
+	letter := string(rune('A' + diskCounter))
+	// Formateamos dinámicamente la ruta del archivo de disco usando fmt.Sprintf
+	val_path := fmt.Sprintf("/home/taro/Escritorio/MIA/P1/%s.dsk", letter)
+
+	// Incrementamos el contador de discos solo si el archivo no existe
+	if _, err := os.Stat(val_path); os.IsNotExist(err) {
+		diskCounter++
+	} else {
+		// Si el archivo ya existe, avanzamos al siguiente disco
+		diskCounter++
+		letter = string(rune('A' + diskCounter))
+		val_path = fmt.Sprintf("/home/taro/Escritorio/MIA/P1/%s.dsk", letter)
 	}
 
 	if !band_error {
@@ -250,6 +307,35 @@ func mkdisk(commandArray []string) {
 					total_size = val_size * 1024
 				}
 
+				// Inicializar Parcticiones
+				copy(master_boot_record.Mbr_partition_1.Part_status[:], "0")
+				copy(master_boot_record.Mbr_partition_1.Part_type[:], "0")
+				copy(master_boot_record.Mbr_partition_1.Part_fit[:], "0")
+				copy(master_boot_record.Mbr_partition_1.Part_start[:], "-1")
+				copy(master_boot_record.Mbr_partition_1.Part_size[:], "0")
+				copy(master_boot_record.Mbr_partition_1.Part_name[:], "")
+
+				copy(master_boot_record.Mbr_partition_2.Part_status[:], "0")
+				copy(master_boot_record.Mbr_partition_2.Part_type[:], "0")
+				copy(master_boot_record.Mbr_partition_2.Part_fit[:], "0")
+				copy(master_boot_record.Mbr_partition_2.Part_start[:], "-1")
+				copy(master_boot_record.Mbr_partition_2.Part_size[:], "0")
+				copy(master_boot_record.Mbr_partition_2.Part_name[:], "")
+
+				copy(master_boot_record.Mbr_partition_3.Part_status[:], "0")
+				copy(master_boot_record.Mbr_partition_3.Part_type[:], "0")
+				copy(master_boot_record.Mbr_partition_3.Part_fit[:], "0")
+				copy(master_boot_record.Mbr_partition_3.Part_start[:], "-1")
+				copy(master_boot_record.Mbr_partition_3.Part_size[:], "0")
+				copy(master_boot_record.Mbr_partition_3.Part_name[:], "")
+
+				copy(master_boot_record.Mbr_partition_4.Part_status[:], "0")
+				copy(master_boot_record.Mbr_partition_4.Part_type[:], "0")
+				copy(master_boot_record.Mbr_partition_4.Part_fit[:], "0")
+				copy(master_boot_record.Mbr_partition_4.Part_start[:], "-1")
+				copy(master_boot_record.Mbr_partition_4.Part_size[:], "0")
+				copy(master_boot_record.Mbr_partition_4.Part_name[:], "")
+
 				str_total_size := strconv.Itoa(total_size)
 
 				cmd := exec.Command("/bin/sh", "-c", "dd if=/dev/zero of=\""+val_path+"\" bs=1024 count="+str_total_size)
@@ -284,6 +370,14 @@ func mkdisk(commandArray []string) {
 		}
 	}
 	fmt.Println("MKDISK creado exitosamente")
+}
+
+func rmdisk(commandArray []string) {
+
+}
+
+func fdisk(commandArray []string) {
+
 }
 
 func msg_error(err error) {
@@ -420,10 +514,6 @@ func execute(commandArray []string) {
 
 }
 
-func ebr(commandArray []string) {
-
-}
-
 func cargarArchivo(ruta string) {
 	file, err := os.Open(ruta)
 	if err != nil {
@@ -436,8 +526,4 @@ func cargarArchivo(ruta string) {
 		split_comando(scanner.Text())
 	}
 	file.Close()
-}
-
-func main() {
-	analizar()
 }
