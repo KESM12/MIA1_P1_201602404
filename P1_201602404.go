@@ -442,6 +442,14 @@ func rmdisk(commandArray []string) {
 }
 
 func fdisk(commandArray []string) {
+	val_size = 0
+	val_driveletter = "" //name del disco
+	val_name = ""        //name de la partición dentro del disco
+	val_unit = ""        //B, K, M
+	val_type = ""        //P, E, L
+	val_fit = ""         //BF, FF, WF
+	val_delete = ""
+	val_add = ""
 
 }
 
