@@ -150,6 +150,9 @@ func ejecutar_comando(commandArray []string) {
 	} else if data == "fdisk" {
 		fdisk(commandArray)
 		fmt.Println()
+	} else if data == "rmdisk" {
+		rmdisk(commandArray)
+		fmt.Println()
 	} else if data == "rep" {
 		mostrar_mkdisk()
 		fmt.Println()
@@ -373,7 +376,69 @@ func mkdisk(commandArray []string) {
 }
 
 func rmdisk(commandArray []string) {
+	val_driveletter := ""
+	//val_path := ""
 
+	band_driveletter := false
+	band_error := false
+
+	for i := 1; i < len(commandArray); i++ {
+		aux_data := strings.SplitAfter(commandArray[i], "=")
+		data := strings.ToLower(aux_data[0])
+		val_data := aux_data[1]
+		switch {
+		case strings.Contains(data, "driveletter="):
+			if band_driveletter {
+				fmt.Println("El parametro -driveletter ya fue ingresado...")
+				band_error = true
+				break
+			}
+			band_driveletter = true
+
+			// Obtenemos la letra del abecedario según el contador global diskCounter
+			//letter := string(rune('A'))
+			// Formateamos dinámicamente la ruta del archivo de disco usando fmt.Sprintf
+			val_driveletter = fmt.Sprintf("/home/taro/Escritorio/MIA/P1/%s.dsk", val_data)
+		default:
+			fmt.Println("Error, parametro no valido...")
+		}
+	}
+
+	if !band_error {
+		for band_driveletter {
+			_, e := os.Stat(val_driveletter)
+
+			if e != nil {
+				if os.IsNotExist(e) {
+					fmt.Println("Error no existe el disco.")
+					band_driveletter = false
+				}
+
+			} else {
+				fmt.Print("¿Esta seguro de eliminar el disco? [S/N]")
+
+				var opcion string
+				fmt.Scanln(&opcion)
+				if opcion == "s" || opcion == "S" {
+					cmd := exec.Command("/bin/sh", "-c", "rm \""+val_driveletter+"\"")
+					cmd.Dir = "/"
+					_, err := cmd.Output()
+
+					if err != nil {
+						msg_error(err)
+					} else {
+						fmt.Println("El disco fue eliminado satisfactoriamente")
+					}
+					band_driveletter = false
+				} else if opcion == "n" || opcion == "N" {
+					fmt.Print("El disco no se eliminara")
+					band_driveletter = false
+				} else {
+					fmt.Println("Opción no valida.")
+				}
+			}
+		}
+	}
 }
 
 func fdisk(commandArray []string) {
