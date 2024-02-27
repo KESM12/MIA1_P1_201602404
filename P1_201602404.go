@@ -23,10 +23,10 @@ type mbr = struct {
 	Mbr_fecha_creacion [100]byte
 	Mbr_dsk_signature  [100]byte
 	Dsk_fit            [100]byte
-	Mbr_partition_1    partition
-	Mbr_partition_2    partition
-	Mbr_partition_3    partition
-	Mbr_partition_4    partition
+	Mbr_partition      [4]partition
+	// Mbr_partition_2    partition
+	// Mbr_partition_3    partition
+	// Mbr_partition_4    partition
 }
 
 type partition = struct {
@@ -41,7 +41,7 @@ type partition = struct {
 }
 
 type Ebr = struct {
-	Part_mount [100]byte
+	Part_mount [100]byte //Estado
 	Part_fit   [100]byte
 	Part_start [100]byte
 	Part_s     [100]byte
@@ -311,33 +311,14 @@ func mkdisk(commandArray []string) {
 				}
 
 				// Inicializar Parcticiones
-				copy(master_boot_record.Mbr_partition_1.Part_status[:], "0")
-				copy(master_boot_record.Mbr_partition_1.Part_type[:], "0")
-				copy(master_boot_record.Mbr_partition_1.Part_fit[:], "0")
-				copy(master_boot_record.Mbr_partition_1.Part_start[:], "-1")
-				copy(master_boot_record.Mbr_partition_1.Part_size[:], "0")
-				copy(master_boot_record.Mbr_partition_1.Part_name[:], "")
-
-				copy(master_boot_record.Mbr_partition_2.Part_status[:], "0")
-				copy(master_boot_record.Mbr_partition_2.Part_type[:], "0")
-				copy(master_boot_record.Mbr_partition_2.Part_fit[:], "0")
-				copy(master_boot_record.Mbr_partition_2.Part_start[:], "-1")
-				copy(master_boot_record.Mbr_partition_2.Part_size[:], "0")
-				copy(master_boot_record.Mbr_partition_2.Part_name[:], "")
-
-				copy(master_boot_record.Mbr_partition_3.Part_status[:], "0")
-				copy(master_boot_record.Mbr_partition_3.Part_type[:], "0")
-				copy(master_boot_record.Mbr_partition_3.Part_fit[:], "0")
-				copy(master_boot_record.Mbr_partition_3.Part_start[:], "-1")
-				copy(master_boot_record.Mbr_partition_3.Part_size[:], "0")
-				copy(master_boot_record.Mbr_partition_3.Part_name[:], "")
-
-				copy(master_boot_record.Mbr_partition_4.Part_status[:], "0")
-				copy(master_boot_record.Mbr_partition_4.Part_type[:], "0")
-				copy(master_boot_record.Mbr_partition_4.Part_fit[:], "0")
-				copy(master_boot_record.Mbr_partition_4.Part_start[:], "-1")
-				copy(master_boot_record.Mbr_partition_4.Part_size[:], "0")
-				copy(master_boot_record.Mbr_partition_4.Part_name[:], "")
+				for i := 0; i < 4; i++ {
+					copy(master_boot_record.Mbr_partition[i].Part_status[:], "0")
+					copy(master_boot_record.Mbr_partition[i].Part_type[:], "0")
+					copy(master_boot_record.Mbr_partition[i].Part_fit[:], "0")
+					copy(master_boot_record.Mbr_partition[i].Part_start[:], "-1")
+					copy(master_boot_record.Mbr_partition[i].Part_size[:], "0")
+					copy(master_boot_record.Mbr_partition[i].Part_name[:], "")
+				}
 
 				str_total_size := strconv.Itoa(total_size)
 
@@ -441,16 +422,775 @@ func rmdisk(commandArray []string) {
 	}
 }
 
-func fdisk(commandArray []string) {
+/*func fdisk2(commandArray []string) {
 	val_size = 0
-	val_driveletter = "" //name del disco
-	val_name = ""        //name de la partición dentro del disco
-	val_unit = ""        //B, K, M
-	val_type = ""        //P, E, L
-	val_fit = ""         //BF, FF, WF
-	val_delete = ""
+	val_driveletter = ""
+	val_name = ""
+	val_unit = ""
+	val_type = ""
+	val_fit = ""
+	val_delete = "Full"
 	val_add = ""
 
+	band_error = false
+	band_size = false
+	band_driveletter = false
+	band_name = false
+	band_unit = false
+	band_type = false
+	band_fit = false
+	band_delete = false
+	band_add = false
+
+	for i := 1; i < len(commandArray); i++ {
+		aux_data := strings.SplitAfter(commandArray[i], "=")
+		data := strings.ToLower(aux_data[0])
+		val_data := aux_data[1]
+
+		switch {
+		case strings.Contains(data, "size="): //obligatorio
+			if band_size {
+				fmt.Println("El parametro -size ya fue ingresado.")
+				band_error = true
+				break
+			}
+			band_size = true
+			aux_size, err := strconv.Atoi(val_data)
+			val_size = aux_size
+			fmt.Println("Size: ", val_size)
+			if err != nil {
+				msg_error(err)
+				band_error = true
+			}
+			if val_size < 0 {
+				band_error = true
+				fmt.Println("El parametro -size no puede ser negativo.")
+				break
+			}
+		case strings.Contains(data, "driveletter="): //obligatorio
+			if band_driveletter {
+				fmt.Println("El parametro -driveletter ya fue ingresado...")
+				band_error = true
+				break
+			}
+			band_driveletter = true
+			val_driveletter = fmt.Sprintf("/home/taro/Escritorio/MIA/P1/%s.dsk", val_data)
+		case strings.Contains(data, "name="): //obligatorio
+			if band_name {
+				fmt.Println("El parametro -name ya fue ingresado.")
+				band_error = true
+				break
+			}
+			band_name = true
+			val_name = strings.Replace(val_data, "\"", "", 2)
+			fmt.Println("Name: ", val_name)
+		case strings.Contains(data, "unit="):
+			if band_unit {
+				fmt.Println("El parametro -unit ya fue ingresado.")
+				band_error = true
+				break
+			}
+			val_unit = strings.Replace(val_data, "\"", "", 2)
+			val_unit = strings.ToLower(val_unit)
+			fmt.Println("Unit: ", val_unit)
+			if val_unit == "b" || val_unit == "k" || val_unit == "m" {
+				band_unit = true
+			} else {
+				fmt.Println("El valor del parametro -unit no es valido.")
+				band_error = true
+				break
+			}
+		case strings.Contains(data, "type="):
+			if band_type {
+				fmt.Println("El parametro -type ya fue ingresado.")
+				band_error = true
+				break
+			}
+			val_type = strings.Replace(val_type, "\"", "", 2)
+			val_type = strings.ToLower(val_type)
+			if val_type == "e" || val_ty == "p" || val_type == "l" {
+				band_type = true
+			} else {
+				fmt.Println("El valor del parametro -type no es valido.")
+				band_error = true
+				break
+			}
+		case strings.Contains(data, "fit="):
+			if band_fit {
+				fmt.Println("El parametro -fit ya fue ingresado.")
+				band_error = true
+				break
+			}
+			val_fit = strings.Replace(val_fit, "\"", "", 2)
+			val_fit = strings.ToLower(val_fit)
+			if val_fit == "bf" || val_fit == "ff" || val_fit == "WF" {
+				band_fit = true
+			} else {
+				fmt.Println("El valor del parametro -fit es incorrecto.")
+				band_error = true
+				break
+			}
+		case strings.Contains(data, "delete="):
+			if band_delete {
+				fmt.Println("El parametro -delete ya fue ingresado.")
+				band_error = true
+				break
+			}
+			val_delete = strings.Replace(val_delete, "\"", "", 2)
+			val_delete = strings.ToLower(val_delete)
+			if val_delete != "full" {
+				fmt.Println("Error: el valor del parametro -delete debe ser 'full'.")
+				band_error = true
+				break
+			} else {
+				fmt.Println("el valor del parametro -delete es incorrecto.")
+				band_delete = true
+				break
+			}
+		case strings.Contains(data, "add="):
+			if band_add {
+				fmt.Println("El parametro -size ya fue ingresado.")
+				band_error = true
+				break
+			}
+			band_add = true
+			aux_add, err := strconv.Atoi(val_data)
+			val_add = aux_add
+			fmt.Println("Size: ", val_add)
+		default:
+			fmt.Println("Error parametro no valido.")
+		}
+	}
+	if !band_error{
+		if band_size{
+			if band_driveletter{
+				if band_name{
+					if band_unit{
+						if band_type{
+							if band_fit{
+								if band_delete{
+									if band_add{
+
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+*/
+
+func fdisk(commandArray []string) {
+	val_size := 0
+	//val_driveletter := ""
+	val_name := ""
+	val_unit := ""
+	val_type := ""
+	val_fit := ""
+	val_delete := "Full"
+	val_add := 0
+
+	band_error := false
+	band_size := false
+	band_driveletter := false
+	band_name := false
+	band_unit := false
+	band_type := false
+	band_fit := false
+	band_delete := false
+	band_add := false
+
+	for i := 1; i < len(commandArray); i++ {
+		aux_data := strings.SplitAfter(commandArray[i], "=")
+		data := strings.ToLower(aux_data[0])
+		val_data := aux_data[1]
+
+		switch {
+		case strings.Contains(data, "size="): //obligatorio
+			if band_size {
+				fmt.Println("El parametro -size ya fue ingresado.")
+				band_error = true
+				break
+			}
+			band_size = true
+			aux_size, err := strconv.Atoi(val_data)
+			val_size = aux_size
+			fmt.Println("Size:", val_size)
+			if err != nil {
+				msg_error(err)
+				band_error = true
+			}
+			if val_size <= 0 {
+				band_error = true
+				fmt.Println("El parametro -size debe ser positivo y mayor a cero.")
+				break
+			}
+		case strings.Contains(data, "driveletter="): //obligatorio
+			if band_driveletter {
+				fmt.Println("El parametro -driveletter ya fue ingresado...")
+				band_error = true
+				break
+			}
+			band_driveletter = true
+			//val_driveletter = val_data
+		case strings.Contains(data, "name="): //obligatorio
+			if band_name {
+				fmt.Println("El parametro -name ya fue ingresado.")
+				band_error = true
+				break
+			}
+			band_name = true
+			val_name = val_data
+			fmt.Println("Name:", val_name)
+		case strings.Contains(data, "unit="):
+			if band_unit {
+				fmt.Println("El parametro -unit ya fue ingresado.")
+				band_error = true
+				break
+			}
+			val_unit = strings.ToUpper(val_data)
+			fmt.Println("Unit:", val_unit)
+			if val_unit == "B" || val_unit == "K" || val_unit == "M" {
+				band_unit = true
+			} else {
+				fmt.Println("El valor del parametro -unit no es valido.")
+				band_error = true
+				break
+			}
+		case strings.Contains(data, "type="):
+			if band_type {
+				fmt.Println("El parametro -type ya fue ingresado.")
+				band_error = true
+				break
+			}
+			val_type = strings.ToUpper(val_data)
+			if val_type == "E" || val_type == "P" || val_type == "L" {
+				band_type = true
+			} else {
+				fmt.Println("El valor del parametro -type no es valido.")
+				band_error = true
+				break
+			}
+		case strings.Contains(data, "fit="):
+			if band_fit {
+				fmt.Println("El parametro -fit ya fue ingresado.")
+				band_error = true
+				break
+			}
+			val_fit = strings.ToUpper(val_data)
+			if val_fit == "BF" || val_fit == "FF" || val_fit == "WF" {
+				band_fit = true
+			} else {
+				fmt.Println("El valor del parametro -fit es incorrecto.")
+				band_error = true
+				break
+			}
+		case strings.Contains(data, "delete="):
+			if band_delete {
+				fmt.Println("El parametro -delete ya fue ingresado.")
+				band_error = true
+				break
+			}
+			val_delete = strings.ToUpper(val_data)
+			if val_delete != "FULL" {
+				fmt.Println("Error: el valor del parametro -delete debe ser 'full'.")
+				band_error = true
+				break
+			}
+			band_delete = true
+		case strings.Contains(data, "add="):
+			if band_add {
+				fmt.Println("El parametro -add ya fue ingresado.")
+				band_error = true
+				break
+			}
+			band_add = true
+			aux_add, err := strconv.Atoi(val_data)
+			val_add = aux_add
+			if err != nil {
+				msg_error(err)
+				band_error = true
+				break
+			}
+			fmt.Println("Add:", val_add)
+		default:
+			fmt.Println("Error: parametro no valido.")
+			band_error = true
+		}
+	}
+	if !band_error {
+		fmt.Println("Todos los parametros fueron ingresados correctamente.")
+		// Aquí puedes agregar la lógica para realizar las operaciones correspondientes
+	} else {
+		fmt.Println("Se encontraron errores, no se pudo completar la operación.")
+	}
+}
+
+/*func fdisk(commandArray []string) {
+	val_size := 0
+	val_unit := ""
+	val_path := ""
+	val_type := ""
+	val_fit := ""
+	val_name := ""
+
+	band_size := false
+	band_unit := false
+	band_path := false
+	band_type := false
+	band_fit := false
+	band_name := false
+	band_error := false
+
+	for i := 1; i < len(commandArray); i++ {
+		aux_data := strings.SplitAfter(commandArray[i], "=")
+		data := strings.ToLower(aux_data[0])
+		val_data := aux_data[1]
+
+		switch {
+		case strings.Contains(data, "size="):
+			if band_size {
+				fmt.Println("[ERROR] El parametro -size ya fue ingresado...")
+				band_error = true
+				break
+			}
+
+			band_size = true
+
+			aux_size, err := strconv.Atoi(val_data)
+			val_size = aux_size
+			fmt.Println("Size: ", val_size)
+			if err != nil {
+				msg_error(err)
+				band_error = true
+			}
+
+			if val_size < 0 {
+				band_error = true
+				fmt.Println("[ERROR] El parametro -size es negativo...")
+				break
+			}
+		case strings.Contains(data, "unit="):
+			if band_unit {
+				fmt.Println("[ERROR] El parametro -unit ya fue ingresado...")
+				band_error = true
+				break
+			}
+			val_unit = strings.Replace(val_data, "\"", "", 2)
+			val_unit = strings.ToLower(val_unit)
+			fmt.Println("Unit: ", val_unit)
+			if val_unit == "b" || val_unit == "k" || val_unit == "m" {
+				band_unit = true
+			} else {
+				fmt.Println("[ERROR] El Valor del parametro -unit no es valido...")
+				band_error = true
+				break
+			}
+		case strings.Contains(data, "path="):
+			if band_path {
+				fmt.Println("[ERROR] El parametro -path ya fue ingresado...")
+				band_error = true
+				break
+			}
+			band_path = true
+			val_path = strings.Replace(val_data, "\"", "", 2)
+			fmt.Println("Path: ", val_path)
+		case strings.Contains(data, "type="):
+			if band_type {
+				fmt.Println("[ERROR] El parametro -type ya fue ingresado...")
+				band_error = true
+				break
+			}
+			val_type = strings.Replace(val_data, "\"", "", 2)
+			val_type = strings.ToLower(val_type)
+			fmt.Println("Type: ", val_type)
+			if val_type == "p" || val_type == "e" || val_type == "l" {
+				band_type = true
+			} else {
+				fmt.Println("[ERROR] El Valor del parametro -type no es valido...")
+				band_error = true
+				break
+			}
+		case strings.Contains(data, "fit="):
+			if band_fit {
+				fmt.Println("[ERROR] El parametro -fit ya fue ingresado...")
+				band_error = true
+				break
+			}
+			val_fit = strings.Replace(val_data, "\"", "", 2)
+			val_fit = strings.ToLower(val_fit)
+			if val_fit == "bf" {
+				band_fit = true
+				val_fit = "b"
+			} else if val_fit == "ff" {
+				band_fit = true
+				val_fit = "f"
+			} else if val_fit == "wf" {
+				band_fit = true
+				val_fit = "w"
+			} else {
+				fmt.Println("[ERROR] El Valor del parametro -fit no es valido...")
+				band_error = true
+				break
+			}
+			fmt.Println("fit: ", val_fit)
+		case strings.Contains(data, "name="):
+			if band_name {
+				fmt.Println("[ERROR] El parametro -name ya fue ingresado...")
+				band_error = true
+				break
+			}
+			band_name = true
+			val_name = strings.Replace(val_data, "\"", "", 2)
+			fmt.Println("Name: ", val_name)
+		default:
+			fmt.Println("[ERROR] Parametro no valido...")
+		}
+	}
+
+	// Verifico si no hay errores
+	if !band_error {
+		if band_size {
+			if band_path {
+				if band_name {
+					if band_type {
+						if val_type == "p" || val_type == "P" {
+							// Primaria
+							crear_particion_primaria(val_path, val_name, val_size, val_fit, val_unit)
+						} else if val_type == "e" || val_type == "E" {
+							// Extendida
+							crear_particon_extendida()
+						} else if val_type == "l" || val_type == "L" {
+							// Logica
+
+						}
+					} else {
+						// Si no lo indica se tomara como Primaria
+						crear_particion_primaria(val_path, val_name, val_size, val_fit, val_unit)
+					}
+				} else {
+					fmt.Println("[ERROR] El parametro -name no fue ingresado")
+				}
+			} else {
+				fmt.Println("[ERROR] El parametro -path no fue ingresado")
+			}
+		} else {
+			fmt.Println("[ERROR] El parametro -size no fue ingresado")
+		}
+	}
+
+	fmt.Println("[MENSAJE] El comando FDISK aqui finaliza")
+}
+*/
+
+func crear_particion_primaria(direccion string, name string, size int, fit string, unit string) {
+	//aux_fit := ""
+	aux_unit := ""
+	aux_path := direccion
+	size_bytes := 1024
+	//buffer := "1"
+
+	mbr_empty := mbr{}
+	var empty [100]byte
+
+	// Verifico si tiene Ajuste
+	if fit != "" {
+		//aux_fit = fit
+	} else {
+		// Por default es Peor ajuste
+		//aux_fit = "w"
+	}
+
+	// Verifico si tiene Unidad
+	if unit != "" {
+		aux_unit = unit
+
+		// *Bytes
+		if aux_unit == "b" {
+			size_bytes = size
+		} else if aux_unit == "k" {
+			// *Kilobytes
+			size_bytes = size * 1024
+		} else {
+			// *Megabytes
+			size_bytes = size * 1024 * 1024
+		}
+	} else {
+		// Por default Kilobytes
+		size_bytes = size * 1024
+	}
+
+	// Abro el archivo para lectura con opcion a modificar
+	f, err := os.OpenFile(aux_path, os.O_RDWR, 0660)
+
+	// ERROR
+	if err != nil {
+		msg_error(err)
+	} else {
+		// Procede a leer el archivo
+		band_particion := false
+		num_particion := 0
+
+		// Calculo del tamano de struct en bytes
+		mbr2 := struct_a_bytes(mbr_empty)
+		sstruct := len(mbr2)
+
+		// Lectrura del archivo binario desde el inicio
+		lectura := make([]byte, sstruct)
+		_, err = f.ReadAt(lectura, 0)
+
+		// ERROR
+		if err != nil && err != io.EOF {
+			msg_error(err)
+		}
+
+		// Conversion de bytes a struct
+		master_boot_record := bytes_a_struct_mbr(lectura)
+
+		// ERROR
+		if err != nil {
+			msg_error(err)
+		}
+
+		// Si el disco esta creado
+		if master_boot_record.Mbr_tamano != empty {
+			s_part_start := ""
+
+			// Recorro las 4 particiones
+			for i := 0; i < 4; i++ {
+				// Antes de comparar limpio la cadena
+				s_part_start = string(master_boot_record.Mbr_partition[i].Part_start[:])
+				s_part_start = strings.Trim(s_part_start, "\x00")
+
+				// Verifico si en las particiones hay espacio
+				if s_part_start == "-1" && band_particion == false {
+					band_particion = true
+					num_particion = i
+				}
+			}
+
+			if band_particion {
+				espacio_usado := 0
+
+				// Recorro las 4 particiones
+				for i := 0; i < 4; i++ {
+					// Obtengo el espacio utilizado
+					s_size := string(master_boot_record.Mbr_partition[i].Part_size[:])
+					// Le quito los caracteres null
+					s_size = strings.Trim(s_size, "\x00")
+					i_size, err := strconv.Atoi(s_size)
+
+					// ERROR
+					if err != nil {
+						msg_error(err)
+					}
+
+					// Le sumo el valor al espacio
+					espacio_usado += i_size
+				}
+
+				/* Tamaño del disco */
+
+				// Obtengo el tamaño del disco
+				s_tamaño_disco := string(master_boot_record.Mbr_tamano[:])
+				// Le quito los caracteres null
+				s_tamaño_disco = strings.Trim(s_tamaño_disco, "\x00")
+				i_tamaño_disco, err2 := strconv.Atoi(s_tamaño_disco)
+
+				// ERROR
+				if err2 != nil {
+					msg_error(err)
+				}
+
+				espacio_disponible := i_tamaño_disco - espacio_usado
+
+				fmt.Println("[ESPACIO DISPONIBLE] ", espacio_disponible, " Bytes")
+				fmt.Println("[ESPACIO NECESARIO] ", size_bytes, " Bytes")
+				fmt.Println(num_particion)
+
+				// Verifico que haya espacio suficiente
+				if espacio_disponible >= size_bytes {
+					fmt.Println("Si cumple!")
+				}
+			}
+		}
+		f.Close()
+	}
+}
+
+func existe_particion(direccion string, nombre string) bool {
+	extendida := -1
+	mbr_empty := mbr{}
+	ebr_empty := Ebr{}
+	var empty [100]byte
+	cont := 0
+	fin_archivo := false
+
+	// Abro el archivo para lectura con opcion a modificar
+	f, err := os.OpenFile(direccion, os.O_RDWR, 0660)
+
+	// ERROR
+	if err != nil {
+		msg_error(err)
+	} else {
+		// Procedo a leer el archivo
+
+		// Calculo del tamano de struct en bytes
+		mbr2 := struct_a_bytes(mbr_empty)
+		sstruct := len(mbr2)
+
+		// Lectrura del archivo binario desde el inicio
+		lectura := make([]byte, sstruct)
+		_, err = f.ReadAt(lectura, 0)
+
+		// ERROR
+		if err != nil && err != io.EOF {
+			msg_error(err)
+		}
+
+		// Conversion de bytes a struct
+		master_boot_record := bytes_a_struct_mbr(lectura)
+		sstruct = len(lectura)
+
+		// ERROR
+		if err != nil {
+			msg_error(err)
+		}
+
+		// Si el disco esta creado
+		if master_boot_record.Mbr_tamano != empty {
+			s_part_name := ""
+			s_part_type := ""
+
+			// Recorro las 4 particiones
+			for i := 0; i < 4; i++ {
+				// Antes de comparar limpio la cadena
+				s_part_name = string(master_boot_record.Mbr_partition[i].Part_name[:])
+				s_part_name = strings.Trim(s_part_name, "\x00")
+
+				// Verifico si ya existe una particion con ese nombre
+				if s_part_name == nombre {
+
+				}
+
+				// Antes de comparar limpio la cadena
+				s_part_type = string(master_boot_record.Mbr_partition[i].Part_type[:])
+				s_part_type = strings.Trim(s_part_type, "\x00")
+
+				// Verifico si de tipo extendida
+				if s_part_type == "E" {
+					extendida = i
+				}
+			}
+
+			// Lo busco en las extendidas
+			if extendida != -1 {
+				// Obtengo el inicio de la particion
+				s_part_start := string(master_boot_record.Mbr_partition[extendida].Part_start[:])
+				// Le quito los caracteres null
+				s_part_start = strings.Trim(s_part_start, "\x00")
+				i_part_start, err := strconv.Atoi(s_part_start)
+
+				// ERROR
+				if err != nil {
+					msg_error(err)
+					fin_archivo = true
+				}
+
+				// Obtengo el espacio de la partcion
+				s_part_size := string(master_boot_record.Mbr_partition[extendida].Part_size[:])
+				// Le quito los caracteres null
+				s_part_size = strings.Trim(s_part_size, "\x00")
+				i_part_size, err := strconv.Atoi(s_part_size)
+
+				// ERROR
+				if err != nil {
+					msg_error(err)
+					fin_archivo = true
+				}
+
+				// Calculo del tamano de struct en bytes
+				ebr2 := struct_a_bytes(ebr_empty)
+				sstruct := len(ebr2)
+
+				// Lectrura de conjunto de bytes desde el inicio de la particion
+				for !fin_archivo {
+					// Lectrura de conjunto de bytes en archivo binario
+					lectura := make([]byte, sstruct)
+					n_leidos, err := f.ReadAt(lectura, int64(sstruct*cont+i_part_start))
+
+					// ERROR
+					if err != nil {
+						msg_error(err)
+						fin_archivo = true
+					}
+
+					// Posicion actual en el archivo
+					pos_actual, err := f.Seek(0, os.SEEK_CUR)
+
+					// ERROR
+					if err != nil {
+						msg_error(err)
+						fin_archivo = true
+					}
+
+					// Si no lee nada y ya se paso del tamaño de la particion
+					if n_leidos == 0 && pos_actual < int64(i_part_start+i_part_size) {
+						fin_archivo = true
+						break
+					}
+
+					// Conversion de bytes a struct
+					extended_boot_record := bytes_a_struct_ebr(lectura)
+					sstruct = len(lectura)
+
+					if err != nil {
+						msg_error(err)
+					}
+
+					if extended_boot_record.Part_s == empty {
+						fin_archivo = true
+					} else {
+						fmt.Print(" Nombre: ")
+						fmt.Print(string(extended_boot_record.Part_name[:]))
+
+						// Antes de comparar limpio la cadena
+						s_part_name = string(extended_boot_record.Part_name[:])
+						s_part_name = strings.Trim(s_part_name, "\x00")
+
+						// Verifico si ya existe una particion con ese nombre
+						if s_part_name == nombre {
+							f.Close()
+							return true
+						}
+
+						// Obtengo el espacio utilizado
+						s_part_next := string(extended_boot_record.Part_next[:])
+						// Le quito los caracteres null
+						s_part_next = strings.Trim(s_part_next, "\x00")
+						i_part_next, err := strconv.Atoi(s_part_next)
+
+						// ERROR
+						if err != nil {
+							msg_error(err)
+						}
+
+						// Si ya termino
+						if i_part_next != -1 {
+							f.Close()
+							return false
+						}
+					}
+					cont++
+				}
+			}
+		}
+	}
+	f.Close()
+	return false
 }
 
 func msg_error(err error) {
@@ -551,6 +1291,20 @@ func bytes_a_struct_mbr(s []byte) mbr {
 	dec := gob.NewDecoder(bytes.NewReader(s))
 	err := dec.Decode(&p)
 
+	if err != nil && err != io.EOF {
+		msg_error(err)
+	}
+
+	return p
+}
+
+// Decodifica de [] Bytes a Struct
+func bytes_a_struct_ebr(s []byte) Ebr {
+	p := Ebr{}
+	dec := gob.NewDecoder(bytes.NewReader(s))
+	err := dec.Decode(&p)
+
+	// ERROR
 	if err != nil && err != io.EOF {
 		msg_error(err)
 	}
