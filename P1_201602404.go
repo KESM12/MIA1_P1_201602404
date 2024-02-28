@@ -422,25 +422,25 @@ func rmdisk(commandArray []string) {
 	}
 }
 
-/*func fdisk2(commandArray []string) {
-	val_size = 0
-	val_driveletter = ""
-	val_name = ""
-	val_unit = ""
-	val_type = ""
-	val_fit = ""
-	val_delete = "Full"
-	val_add = ""
+func fdisk(commandArray []string) {
+	val_size := 0
+	val_driveletter := ""
+	val_name := ""
+	val_unit := ""
+	val_type := ""
+	val_fit := ""
+	val_delete := "Full"
+	val_add := ""
 
-	band_error = false
-	band_size = false
-	band_driveletter = false
-	band_name = false
-	band_unit = false
-	band_type = false
-	band_fit = false
-	band_delete = false
-	band_add = false
+	band_error := false
+	band_size := false
+	band_driveletter := false
+	band_name := false
+	band_unit := false
+	band_type := false
+	band_fit := false
+	band_delete := false
+	band_add := false
 
 	for i := 1; i < len(commandArray); i++ {
 		aux_data := strings.SplitAfter(commandArray[i], "=")
@@ -475,6 +475,7 @@ func rmdisk(commandArray []string) {
 			}
 			band_driveletter = true
 			val_driveletter = fmt.Sprintf("/home/taro/Escritorio/MIA/P1/%s.dsk", val_data)
+			fmt.Println("driver letter: ", val_driveletter)
 		case strings.Contains(data, "name="): //obligatorio
 			if band_name {
 				fmt.Println("El parametro -name ya fue ingresado.")
@@ -506,27 +507,38 @@ func rmdisk(commandArray []string) {
 				band_error = true
 				break
 			}
-			val_type = strings.Replace(val_type, "\"", "", 2)
+			val_type = strings.Replace(val_data, "\"", "", 2)
 			val_type = strings.ToLower(val_type)
-			if val_type == "e" || val_ty == "p" || val_type == "l" {
+			fmt.Println("Type: ", val_type)
+			if val_type == "p" || val_type == "e" || val_type == "l" {
 				band_type = true
 			} else {
 				fmt.Println("El valor del parametro -type no es valido.")
 				band_error = true
 				break
 			}
+
 		case strings.Contains(data, "fit="):
 			if band_fit {
-				fmt.Println("El parametro -fit ya fue ingresado.")
+				fmt.Println("Parametro -fit ya fue ingresado...")
 				band_error = true
 				break
 			}
-			val_fit = strings.Replace(val_fit, "\"", "", 2)
+			// Le quito las comillas y lo paso a minusculas
+			val_fit = strings.Replace(val_data, "\"", "", 2)
 			val_fit = strings.ToLower(val_fit)
-			if val_fit == "bf" || val_fit == "ff" || val_fit == "WF" {
+
+			if val_fit == "bf" { // Best Fit
 				band_fit = true
+				val_fit = "b"
+			} else if val_fit == "ff" { // First Fit
+				band_fit = true
+				val_fit = "f"
+			} else if val_fit == "wf" { // Worst Fit
+				band_fit = true
+				val_fit = "w"
 			} else {
-				fmt.Println("El valor del parametro -fit es incorrecto.")
+				fmt.Println("Valor del parametro -fit no es valido...")
 				band_error = true
 				break
 			}
@@ -549,350 +561,95 @@ func rmdisk(commandArray []string) {
 			}
 		case strings.Contains(data, "add="):
 			if band_add {
-				fmt.Println("El parametro -size ya fue ingresado.")
-				band_error = true
-				break
-			}
-			band_add = true
-			aux_add, err := strconv.Atoi(val_data)
-			val_add = aux_add
-			fmt.Println("Size: ", val_add)
-		default:
-			fmt.Println("Error parametro no valido.")
-		}
-	}
-	if !band_error{
-		if band_size{
-			if band_driveletter{
-				if band_name{
-					if band_unit{
-						if band_type{
-							if band_fit{
-								if band_delete{
-									if band_add{
-
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-}
-*/
-
-func fdisk(commandArray []string) {
-	val_size := 0
-	//val_driveletter := ""
-	val_name := ""
-	val_unit := ""
-	val_type := ""
-	val_fit := ""
-	val_delete := "Full"
-	val_add := 0
-
-	band_error := false
-	band_size := false
-	band_driveletter := false
-	band_name := false
-	band_unit := false
-	band_type := false
-	band_fit := false
-	band_delete := false
-	band_add := false
-
-	for i := 1; i < len(commandArray); i++ {
-		aux_data := strings.SplitAfter(commandArray[i], "=")
-		data := strings.ToLower(aux_data[0])
-		val_data := aux_data[1]
-
-		switch {
-		case strings.Contains(data, "size="): //obligatorio
-			if band_size {
-				fmt.Println("El parametro -size ya fue ingresado.")
-				band_error = true
-				break
-			}
-			band_size = true
-			aux_size, err := strconv.Atoi(val_data)
-			val_size = aux_size
-			fmt.Println("Size:", val_size)
-			if err != nil {
-				msg_error(err)
-				band_error = true
-			}
-			if val_size <= 0 {
-				band_error = true
-				fmt.Println("El parametro -size debe ser positivo y mayor a cero.")
-				break
-			}
-		case strings.Contains(data, "driveletter="): //obligatorio
-			if band_driveletter {
-				fmt.Println("El parametro -driveletter ya fue ingresado...")
-				band_error = true
-				break
-			}
-			band_driveletter = true
-			//val_driveletter = val_data
-		case strings.Contains(data, "name="): //obligatorio
-			if band_name {
-				fmt.Println("El parametro -name ya fue ingresado.")
-				band_error = true
-				break
-			}
-			band_name = true
-			val_name = val_data
-			fmt.Println("Name:", val_name)
-		case strings.Contains(data, "unit="):
-			if band_unit {
-				fmt.Println("El parametro -unit ya fue ingresado.")
-				band_error = true
-				break
-			}
-			val_unit = strings.ToUpper(val_data)
-			fmt.Println("Unit:", val_unit)
-			if val_unit == "B" || val_unit == "K" || val_unit == "M" {
-				band_unit = true
-			} else {
-				fmt.Println("El valor del parametro -unit no es valido.")
-				band_error = true
-				break
-			}
-		case strings.Contains(data, "type="):
-			if band_type {
-				fmt.Println("El parametro -type ya fue ingresado.")
-				band_error = true
-				break
-			}
-			val_type = strings.ToUpper(val_data)
-			if val_type == "E" || val_type == "P" || val_type == "L" {
-				band_type = true
-			} else {
-				fmt.Println("El valor del parametro -type no es valido.")
-				band_error = true
-				break
-			}
-		case strings.Contains(data, "fit="):
-			if band_fit {
-				fmt.Println("El parametro -fit ya fue ingresado.")
-				band_error = true
-				break
-			}
-			val_fit = strings.ToUpper(val_data)
-			if val_fit == "BF" || val_fit == "FF" || val_fit == "WF" {
-				band_fit = true
-			} else {
-				fmt.Println("El valor del parametro -fit es incorrecto.")
-				band_error = true
-				break
-			}
-		case strings.Contains(data, "delete="):
-			if band_delete {
-				fmt.Println("El parametro -delete ya fue ingresado.")
-				band_error = true
-				break
-			}
-			val_delete = strings.ToUpper(val_data)
-			if val_delete != "FULL" {
-				fmt.Println("Error: el valor del parametro -delete debe ser 'full'.")
-				band_error = true
-				break
-			}
-			band_delete = true
-		case strings.Contains(data, "add="):
-			if band_add {
 				fmt.Println("El parametro -add ya fue ingresado.")
 				band_error = true
 				break
 			}
 			band_add = true
-			aux_add, err := strconv.Atoi(val_data)
-			val_add = aux_add
-			if err != nil {
-				msg_error(err)
-				band_error = true
-				break
-			}
-			fmt.Println("Add:", val_add)
+			fmt.Println("Add: ", val_add)
 		default:
-			fmt.Println("Error: parametro no valido.")
-			band_error = true
+			fmt.Println("Error parametro no valido.")
 		}
 	}
-	if !band_error {
-		fmt.Println("Todos los parametros fueron ingresados correctamente.")
-		// Aquí puedes agregar la lógica para realizar las operaciones correspondientes
-	} else {
-		fmt.Println("Se encontraron errores, no se pudo completar la operación.")
-	}
-}
-
-/*func fdisk(commandArray []string) {
-	val_size := 0
-	val_unit := ""
-	val_path := ""
-	val_type := ""
-	val_fit := ""
-	val_name := ""
-
-	band_size := false
-	band_unit := false
-	band_path := false
-	band_type := false
-	band_fit := false
-	band_name := false
-	band_error := false
-
-	for i := 1; i < len(commandArray); i++ {
-		aux_data := strings.SplitAfter(commandArray[i], "=")
-		data := strings.ToLower(aux_data[0])
-		val_data := aux_data[1]
-
-		switch {
-		case strings.Contains(data, "size="):
-			if band_size {
-				fmt.Println("[ERROR] El parametro -size ya fue ingresado...")
-				band_error = true
-				break
-			}
-
-			band_size = true
-
-			aux_size, err := strconv.Atoi(val_data)
-			val_size = aux_size
-			fmt.Println("Size: ", val_size)
-			if err != nil {
-				msg_error(err)
-				band_error = true
-			}
-
-			if val_size < 0 {
-				band_error = true
-				fmt.Println("[ERROR] El parametro -size es negativo...")
-				break
-			}
-		case strings.Contains(data, "unit="):
-			if band_unit {
-				fmt.Println("[ERROR] El parametro -unit ya fue ingresado...")
-				band_error = true
-				break
-			}
-			val_unit = strings.Replace(val_data, "\"", "", 2)
-			val_unit = strings.ToLower(val_unit)
-			fmt.Println("Unit: ", val_unit)
-			if val_unit == "b" || val_unit == "k" || val_unit == "m" {
-				band_unit = true
-			} else {
-				fmt.Println("[ERROR] El Valor del parametro -unit no es valido...")
-				band_error = true
-				break
-			}
-		case strings.Contains(data, "path="):
-			if band_path {
-				fmt.Println("[ERROR] El parametro -path ya fue ingresado...")
-				band_error = true
-				break
-			}
-			band_path = true
-			val_path = strings.Replace(val_data, "\"", "", 2)
-			fmt.Println("Path: ", val_path)
-		case strings.Contains(data, "type="):
-			if band_type {
-				fmt.Println("[ERROR] El parametro -type ya fue ingresado...")
-				band_error = true
-				break
-			}
-			val_type = strings.Replace(val_data, "\"", "", 2)
-			val_type = strings.ToLower(val_type)
-			fmt.Println("Type: ", val_type)
-			if val_type == "p" || val_type == "e" || val_type == "l" {
-				band_type = true
-			} else {
-				fmt.Println("[ERROR] El Valor del parametro -type no es valido...")
-				band_error = true
-				break
-			}
-		case strings.Contains(data, "fit="):
-			if band_fit {
-				fmt.Println("[ERROR] El parametro -fit ya fue ingresado...")
-				band_error = true
-				break
-			}
-			val_fit = strings.Replace(val_data, "\"", "", 2)
-			val_fit = strings.ToLower(val_fit)
-			if val_fit == "bf" {
-				band_fit = true
-				val_fit = "b"
-			} else if val_fit == "ff" {
-				band_fit = true
-				val_fit = "f"
-			} else if val_fit == "wf" {
-				band_fit = true
-				val_fit = "w"
-			} else {
-				fmt.Println("[ERROR] El Valor del parametro -fit no es valido...")
-				band_error = true
-				break
-			}
-			fmt.Println("fit: ", val_fit)
-		case strings.Contains(data, "name="):
-			if band_name {
-				fmt.Println("[ERROR] El parametro -name ya fue ingresado...")
-				band_error = true
-				break
-			}
-			band_name = true
-			val_name = strings.Replace(val_data, "\"", "", 2)
-			fmt.Println("Name: ", val_name)
-		default:
-			fmt.Println("[ERROR] Parametro no valido...")
-		}
-	}
-
-	// Verifico si no hay errores
 	if !band_error {
 		if band_size {
-			if band_path {
+			if band_driveletter {
 				if band_name {
-					if band_type {
-						if val_type == "p" || val_type == "P" {
-							// Primaria
-							crear_particion_primaria(val_path, val_name, val_size, val_fit, val_unit)
-						} else if val_type == "e" || val_type == "E" {
-							// Extendida
-							crear_particon_extendida()
-						} else if val_type == "l" || val_type == "L" {
-							// Logica
-
+					crear_particion_primaria(val_driveletter, val_name, val_size, val_fit, val_unit)
+					if band_unit {
+						if band_type {
+							if val_type == "p" {
+								crear_particion_primaria(val_driveletter, val_name, val_size, val_fit, val_unit)
+							} else if val_type == "e" {
+								crear_particion_primaria(val_driveletter, val_name, val_size, val_fit, val_unit) //cambiar a partción extendida
+							} else if val_type == "l" {
+								crear_particion_primaria(val_driveletter, val_name, val_size, val_fit, val_unit) //cambiar a partción logica
+							} else {
+								crear_particion_primaria(val_driveletter, val_name, val_size, val_fit, val_unit)
+							}
+							if band_fit {
+								if band_delete {
+									eliminar_particion(val_driveletter, val_name, val_size) //full?
+									if band_add {
+										if band_add { //validar que venga positivo o negativo
+											agregar_espacio_particion(val_driveletter, val_name, val_add, val_unit)
+										} else {
+											quitar_espacio_particion(val_driveletter, val_name, val_add, val_unit)
+										}
+									} else {
+										fmt.Println("Error en el parametro add.")
+									}
+								} else {
+									fmt.Println("Error en el parametro delete.")
+								}
+							} else {
+								fmt.Println("Error en el parametro fit.")
+							}
+						} else {
+							fmt.Println("Error en el parametro type.")
 						}
 					} else {
-						// Si no lo indica se tomara como Primaria
-						crear_particion_primaria(val_path, val_name, val_size, val_fit, val_unit)
+						fmt.Println("Error en el parametro unit.")
 					}
 				} else {
-					fmt.Println("[ERROR] El parametro -name no fue ingresado")
+					fmt.Println("Error en el parametro name")
 				}
 			} else {
-				fmt.Println("[ERROR] El parametro -path no fue ingresado")
+				fmt.Println("Error en el parametro driveletter.")
 			}
 		} else {
-			fmt.Println("[ERROR] El parametro -size no fue ingresado")
+			fmt.Println("Error en el parametro size.")
 		}
 	}
-
-	fmt.Println("[MENSAJE] El comando FDISK aqui finaliza")
 }
-*/
+
+func eliminar_particion(direccion string, name string, size int) { //val_driveletter, val_name, val_size) //full?
+	fmt.Println("Eliminando partición en", direccion)
+	fmt.Println("Nombre de la partición:", name)
+	fmt.Println("Tamaño de la partición:", size)
+}
+
+func agregar_espacio_particion(direccion string, name string, size string, unidad string) { //val_driveletter, val_name, val_add, val_unit, val_size)
+	fmt.Println("Agregando espacio a partición en", direccion)
+	fmt.Println("Nombre de la partición:", name)
+	fmt.Println("Tamaño a agregar:", size, unidad)
+}
+
+func quitar_espacio_particion(direccion string, name string, size string, unidad string) { //val_driveletter, val_name, val_add, val_unit, val_size)
+	fmt.Println("Quitando espacio a partición en", direccion)
+	fmt.Println("Nombre de la partición:", name)
+	fmt.Println("Tamaño a quitar:", size, unidad)
+}
 
 func crear_particion_primaria(direccion string, name string, size int, fit string, unit string) {
 	//aux_fit := ""
 	aux_unit := ""
 	aux_path := direccion
 	size_bytes := 1024
+	aux_name := name
 	//buffer := "1"
 
+	fmt.Print("name: ", aux_name)
 	mbr_empty := mbr{}
 	var empty [100]byte
 
