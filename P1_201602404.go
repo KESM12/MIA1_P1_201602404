@@ -485,6 +485,8 @@ func fdisk(commandArray []string) {
 			band_name = true
 			val_name = strings.Replace(val_data, "\"", "", 2)
 			fmt.Println("Name: ", val_name)
+
+		//problem system validation
 		case strings.Contains(data, "unit="):
 			if band_unit {
 				fmt.Println("El parametro -unit ya fue ingresado.")
@@ -542,6 +544,7 @@ func fdisk(commandArray []string) {
 				band_error = true
 				break
 			}
+
 		case strings.Contains(data, "delete="):
 			if band_delete {
 				fmt.Println("El parametro -delete ya fue ingresado.")
@@ -554,10 +557,6 @@ func fdisk(commandArray []string) {
 				fmt.Println("Error: el valor del parametro -delete debe ser 'full'.")
 				band_error = true
 				break
-			} else {
-				fmt.Println("el valor del parametro -delete es incorrecto.")
-				band_delete = true
-				break
 			}
 		case strings.Contains(data, "add="):
 			if band_add {
@@ -566,60 +565,84 @@ func fdisk(commandArray []string) {
 				break
 			}
 			band_add = true
+			val_add = strings.Replace(val_add, "\"", "", 2)
 			fmt.Println("Add: ", val_add)
 		default:
 			fmt.Println("Error parametro no valido.")
 		}
 	}
-	if !band_error {
-		if band_size {
-			if band_driveletter {
-				if band_name {
-					crear_particion_primaria(val_driveletter, val_name, val_size, val_fit, val_unit)
-					if band_unit {
-						if band_type {
-							if val_type == "p" {
-								crear_particion_primaria(val_driveletter, val_name, val_size, val_fit, val_unit)
-							} else if val_type == "e" {
-								crear_particion_primaria(val_driveletter, val_name, val_size, val_fit, val_unit) //cambiar a partción extendida
-							} else if val_type == "l" {
-								crear_particion_primaria(val_driveletter, val_name, val_size, val_fit, val_unit) //cambiar a partción logica
-							} else {
-								crear_particion_primaria(val_driveletter, val_name, val_size, val_fit, val_unit)
-							}
-							if band_fit {
-								if band_delete {
-									eliminar_particion(val_driveletter, val_name, val_size) //full?
-									if band_add {
-										if band_add { //validar que venga positivo o negativo
-											agregar_espacio_particion(val_driveletter, val_name, val_add, val_unit)
-										} else {
-											quitar_espacio_particion(val_driveletter, val_name, val_add, val_unit)
-										}
-									} else {
-										fmt.Println("Error en el parametro add.")
-									}
-								} else {
-									fmt.Println("Error en el parametro delete.")
-								}
-							} else {
-								fmt.Println("Error en el parametro fit.")
-							}
-						} else {
-							fmt.Println("Error en el parametro type.")
-						}
-					} else {
-						fmt.Println("Error en el parametro unit.")
-					}
-				} else {
-					fmt.Println("Error en el parametro name")
-				}
-			} else {
-				fmt.Println("Error en el parametro driveletter.")
+
+	if !band_error { //band_erro diferente de false indica un error.
+		if band_size && band_driveletter && band_name {
+			fmt.Println("validando que traiga los parametros obligatorios")
+			if !band_unit {
+				val_unit = "k"
 			}
+			if !band_type {
+				val_type = "p"
+			}
+			if !band_fit {
+				val_fit = "wf"
+			}
+
+			fmt.Println("Size: ", val_size)
+			fmt.Println("Driveletter: ", val_driveletter)
+			fmt.Println("Name: ", val_name)
+			fmt.Println("Unit: ", val_unit)
+			fmt.Println("Fit:", val_fit)
+			fmt.Println("Type: ", val_type)
+			fmt.Println("Delete: ", val_delete)
+			fmt.Println("Add: ", val_add)
+
+			if band_delete {
+				fmt.Println("delete?")
+				fmt.Println("name: ", val_name)
+				fmt.Println("driverletter: ", val_driveletter)
+				fmt.Println("Delete: ", val_delete)
+			}
+
+			if band_add {
+				fmt.Println("add?")
+				fmt.Println("unit: ", val_unit)
+				fmt.Println("Add1: ", val_add)
+			}
+
+			// //crear_particion_primaria(val_driveletter, val_name, val_size, val_fit, val_unit)
+			// if band_unit {
+			// 	if band_type {
+			// 		if band_fit {
+			// 			if val_type == "e" {
+			// 				crear_particion_extendida(val_driveletter, val_name, val_size, val_unit)
+			// 			} else if val_type == "l" {
+			// 				crear_particion_logica(val_driveletter, val_name, val_fit, val_unit, val_size)
+			// 			} else {
+			// 				crear_particion_primaria(val_driveletter, val_name, val_size, val_fit, val_unit)
+			// 			}
+			// 		}
+			// 	} else {
+			// 		if band_fit {
+			// 			crear_particion_primaria(val_driveletter, val_name, val_size, val_fit, val_unit)
+			// 		}
+			// 	}
+			// } else {
+			// 	val_unit = "k"
+			// 	if band_type {
+			// 		if band_fit {
+			// 			if val_type == "e" {
+			// 				crear_particion_extendida(val_driveletter, val_name, val_size, val_unit)
+			// 			} else if val_type == "l" {
+			// 				crear_particion_logica(val_driveletter, val_name, val_fit, val_unit, val_size)
+			// 			} else {
+			// 				crear_particion_primaria(val_driveletter, val_name, val_size, val_fit, val_unit)
+			// 			}
+			// 		}
+			// 	}
+			// }
 		} else {
-			fmt.Println("Error en el parametro size.")
+			fmt.Println("Error faltan parametros obligatorios.")
 		}
+	} else {
+		fmt.Println("Error en tiempo de ejecución.")
 	}
 }
 
