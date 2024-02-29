@@ -153,6 +153,9 @@ func ejecutar_comando(commandArray []string) {
 	} else if data == "rmdisk" {
 		rmdisk(commandArray)
 		fmt.Println()
+	} else if data == "mount" {
+		mount()
+		fmt.Println()
 	} else if data == "rep" {
 		mostrar_mkdisk()
 		fmt.Println()
@@ -1007,6 +1010,10 @@ func existe_particion(direccion string, nombre string) bool {
 	}
 	f.Close()
 	return false
+}
+
+func mount(commandArray []string) {
+	//mount
 }
 
 func msg_error(err error) {
