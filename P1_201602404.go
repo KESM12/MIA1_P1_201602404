@@ -154,8 +154,8 @@ func ejecutar_comando(commandArray []string) {
 		rmdisk(commandArray)
 		fmt.Println()
 	} else if data == "mount" {
-		mount()
-		fmt.Println()
+		//mount()
+		fmt.Println("Mount.")
 	} else if data == "rep" {
 		mostrar_mkdisk()
 		fmt.Println()
@@ -575,115 +575,83 @@ func fdisk(commandArray []string) {
 		}
 	}
 
-	if band_add && band_delete {
-		fmt.Println("No pueden venir add y delete en el mismo comando.")
+	// if band_add && band_delete {
+	// 	fmt.Println("No pueden venir add y delete en el mismo comando.")
+	// 	band_error = true
+	// }
+
+	// if !band_error { //band_error diferente de false indica un error.
+	// 	fmt.Println("Hola sin errores.")
+	// 	if band_size && band_driveletter && band_name {
+
+	// 		if band_unit {
+	// 			if band_fit {
+	// 				if band_type {
+	// 					if val_type == "e" {
+	// 						//crear_particion_extendida()
+	// 					} else if val_type == "l" {
+	// 						//crear particion logica
+	// 					} else {
+	// 						fmt.Println("hola taro 2")
+	// 						crear_particion_primaria(val_driveletter, val_name, val_size, val_fit, val_unit)
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 		if band_delete {
+	// 			//borrar_particion(val_driveletter, val_name, val_delete)
+	// 		}
+	// 		if band_add {
+	// 			if band_size {
+	// 				//agregar_espacio_particion(val_driveletter, val_name, val_unit, val_size)
+	// 			} else {
+	// 				//agregar_espacio_particion(val_driveletter, val_name, val_unit, val_add)
+	// 			}
+
+	// 		}
+	// 	} else {
+	// 		fmt.Println("Error faltan parametros obligatorios.")
+	// 	}
+	// } else {
+	// 	fmt.Println("Error en tiempo de ejecución.")
+	// }
+	if band_delete && band_add {
+		fmt.Println("Error: no pueden venir -add y -delete en el mismo comando.")
 		band_error = true
 	}
 
-	if !band_error { //band_error diferente de false indica un error.
-		if band_size && band_driveletter && band_name {
-			// fmt.Println("validando que traiga los parametros obligatorios")
-			// if !band_unit {
-			// 	val_unit = "k"
-			// }
-			// if !band_type {
-			// 	val_type = "p"
-			// }
-			// if !band_fit {
-			// 	val_fit = "wf"
-			// }
-			// if band_unit {
-			// 	if band_fit {
-			// 		if band_type {
-			// 			if val_type == "e" {
-			// 				// Partición extendida
-			// 			} else if val_type == "l" {
-			// 				// Partición logica.
-			// 			} else {
-			// 				crear_particion_primaria(val_driveletter, val_name, val_size, val_fit, val_unit)
-			// 			}
-			// 		}
-			// 	}
-			// }
-			// fmt.Println("Size: ", val_size)
-			// fmt.Println("Driveletter: ", val_driveletter)
-			// fmt.Println("Name: ", val_name)
-			// fmt.Println("Unit: ", val_unit)
-			// fmt.Println("Fit:", val_fit)
-			// fmt.Println("Type: ", val_type)
-			// fmt.Println("Delete: ", val_delete)
-			// fmt.Println("Add: ", val_add)
-			// if band_delete {
-			// 	fmt.Println("delete?")
-			// 	fmt.Println("name: ", val_name)
-			// 	fmt.Println("driverletter: ", val_driveletter)
-			// 	fmt.Println("Delete: ", val_delete)
-			// }
-			// if band_add {
-			// 	fmt.Println("add?")
-			// 	fmt.Println("unit: ", val_unit)
-			// 	fmt.Println("Add1: ", val_add)
-			// }
-			// //crear_particion_primaria(val_driveletter, val_name, val_size, val_fit, val_unit)
-			// if band_unit {
-			// 	if band_type {
-			// 		if band_fit {
-			// 			if val_type == "e" {
-			// 				crear_particion_extendida(val_driveletter, val_name, val_size, val_unit)
-			// 			} else if val_type == "l" {
-			// 				crear_particion_logica(val_driveletter, val_name, val_fit, val_unit, val_size)
-			// 			} else {
-			// 				crear_particion_primaria(val_driveletter, val_name, val_size, val_fit, val_unit)
-			// 			}
-			// 		}
-			// 	} else {
-			// 		if band_fit {
-			// 			crear_particion_primaria(val_driveletter, val_name, val_size, val_fit, val_unit)
-			// 		}
-			// 	}
-			// } else {
-			// 	val_unit = "k"
-			// 	if band_type {
-			// 		if band_fit {
-			// 			if val_type == "e" {
-			// 				crear_particion_extendida(val_driveletter, val_name, val_size, val_unit)
-			// 			} else if val_type == "l" {
-			// 				crear_particion_logica(val_driveletter, val_name, val_fit, val_unit, val_size)
-			// 			} else {
-			// 				crear_particion_primaria(val_driveletter, val_name, val_size, val_fit, val_unit)
-			// 			}
-			// 		}
-			// 	}
-			// }
-			if band_unit {
-				if band_fit {
-					if band_type {
-						if val_type == "e" {
-							//crear_particion_extendida()
-						} else if val_type == "l" {
-							//crear particion logica
-						} else {
-							crear_particion_primaria(val_driveletter, val_name, val_size, val_fit, val_unit)
-						}
-					}
-				}
-			}
-			if band_delete {
-				//borrar_particion(val_driveletter, val_name, val_delete)
-			}
-			if band_add {
-				if band_size {
-					//agregar_espacio_particion(val_driveletter, val_name, val_unit, val_size)
-				} else {
-					//agregar_espacio_particion(val_driveletter, val_name, val_unit, val_add)
-				}
+	if !band_size || !band_driveletter || !band_name {
+		fmt.Println("Error: faltan parámetros obligatorios.")
+		band_error = true
+	}
 
-			}
+	if band_error {
+		fmt.Println("Error en tiempo de ejecución.")
+		return
+	}
+
+	if band_unit || band_type || band_fit {
+		if val_type == "e" {
+			fmt.Println("Crear partición extendida.")
+		} else if val_type == "l" {
+			fmt.Println("Crear partición lógica.")
 		} else {
-			fmt.Println("Error faltan parametros obligatorios.")
+			fmt.Println("Crear partición primaria.")
+			crear_particion_primaria(val_driveletter, val_name, val_size, val_fit, val_unit)
 		}
 	} else {
-		fmt.Println("Error en tiempo de ejecución.")
+		fmt.Println("Crear partición primaria.")
+		crear_particion_primaria(val_driveletter, val_name, val_size, "", "")
+	}
+
+	if band_delete {
+		fmt.Println("Borrar partición.")
+		// Llamar a función para borrar partición
+	}
+
+	if band_add {
+		fmt.Println("Agregar espacio a la partición.")
+		// Llamar a función para agregar espacio a la partición
 	}
 }
 
@@ -706,6 +674,8 @@ func quitar_espacio_particion(direccion string, name string, size string, unidad
 }
 
 func crear_particion_primaria(direccion string, name string, size int, fit string, unit string) {
+	fmt.Println("Hola taro.")
+	aux_fit := ""
 	aux_unit := ""
 	aux_path := direccion
 	size_bytes := 1024
@@ -717,16 +687,16 @@ func crear_particion_primaria(direccion string, name string, size int, fit strin
 
 	// Verifico si tiene Ajuste
 	if fit != "" {
-		//aux_fit = fit
+		fmt.Println("Fit: ", aux_fit) //aux_fit
+		aux_fit = fit
 	} else {
 		// Por default es Peor ajuste
-		//aux_fit = "w"
+		aux_fit = "w"
 	}
 
 	// Verifico si tiene Unidad
 	if unit != "" {
 		aux_unit = unit
-
 		// *Bytes
 		if aux_unit == "b" {
 			size_bytes = size
@@ -833,6 +803,28 @@ func crear_particion_primaria(direccion string, name string, size int, fit strin
 				// Verifico que haya espacio suficiente
 				if espacio_disponible >= size_bytes {
 					fmt.Println("Si cumple!")
+					newPartition := partition{
+						Part_status: [100]byte{'1'}, // Marcar la partición como activa
+						Part_type:   [100]byte{'P'}, // Tipo de partición primaria
+						Part_fit:    [100]byte{},    // Ajuste de la partición
+						Part_start:  [100]byte{'0'}, // Determinar el inicio de la partición (aquí deberías calcularlo)
+						Part_size:   [100]byte{'0'}, // Tamaño de la partición (aquí deberías establecerlo)
+						Part_name:   [100]byte{},
+					}
+
+					copy(newPartition.Part_fit[:], []byte(fit)[:len(newPartition.Part_fit)])
+					copy(newPartition.Part_name[:], []byte(name)[:len(newPartition.Part_name)])
+					master_boot_record.Mbr_partition[num_particion] = newPartition
+
+					mbr_bytes := struct_a_bytes(master_boot_record)
+					_, err = f.WriteAt(mbr_bytes, 0)
+					if err != nil {
+						msg_error(err)
+						return
+					}
+					fmt.Println("Particion primaria creada con exito.")
+				} else {
+					fmt.Println("No hay suficiente espacio.")
 				}
 			}
 		}
