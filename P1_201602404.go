@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"encoding/binary"
 	"encoding/gob"
 	"errors"
 	"fmt"
@@ -575,46 +576,6 @@ func fdisk(commandArray []string) {
 		}
 	}
 
-	// if band_add && band_delete {
-	// 	fmt.Println("No pueden venir add y delete en el mismo comando.")
-	// 	band_error = true
-	// }
-
-	// if !band_error { //band_error diferente de false indica un error.
-	// 	fmt.Println("Hola sin errores.")
-	// 	if band_size && band_driveletter && band_name {
-
-	// 		if band_unit {
-	// 			if band_fit {
-	// 				if band_type {
-	// 					if val_type == "e" {
-	// 						//crear_particion_extendida()
-	// 					} else if val_type == "l" {
-	// 						//crear particion logica
-	// 					} else {
-	// 						fmt.Println("hola taro 2")
-	// 						crear_particion_primaria(val_driveletter, val_name, val_size, val_fit, val_unit)
-	// 					}
-	// 				}
-	// 			}
-	// 		}
-	// 		if band_delete {
-	// 			//borrar_particion(val_driveletter, val_name, val_delete)
-	// 		}
-	// 		if band_add {
-	// 			if band_size {
-	// 				//agregar_espacio_particion(val_driveletter, val_name, val_unit, val_size)
-	// 			} else {
-	// 				//agregar_espacio_particion(val_driveletter, val_name, val_unit, val_add)
-	// 			}
-
-	// 		}
-	// 	} else {
-	// 		fmt.Println("Error faltan parametros obligatorios.")
-	// 	}
-	// } else {
-	// 	fmt.Println("Error en tiempo de ejecución.")
-	// }
 	if band_delete && band_add {
 		fmt.Println("Error: no pueden venir -add y -delete en el mismo comando.")
 		band_error = true
@@ -673,21 +634,16 @@ func quitar_espacio_particion(direccion string, name string, size string, unidad
 	fmt.Println("Tamaño a quitar:", size, unidad)
 }
 
-func crear_particion_primaria(direccion string, name string, size int, fit string, unit string) {
-	fmt.Println("Hola taro.")
+func crear_particion_primaria(direccion string, nombre string, size int, fit string, unit string) {
 	aux_fit := ""
 	aux_unit := ""
-	aux_path := direccion
 	size_bytes := 1024
-	aux_name := name
 
-	fmt.Print("name: ", aux_name)
 	mbr_empty := mbr{}
 	var empty [100]byte
 
 	// Verifico si tiene Ajuste
 	if fit != "" {
-		fmt.Println("Fit: ", aux_fit) //aux_fit
 		aux_fit = fit
 	} else {
 		// Por default es Peor ajuste
@@ -697,6 +653,7 @@ func crear_particion_primaria(direccion string, name string, size int, fit strin
 	// Verifico si tiene Unidad
 	if unit != "" {
 		aux_unit = unit
+
 		// *Bytes
 		if aux_unit == "b" {
 			size_bytes = size
@@ -713,36 +670,28 @@ func crear_particion_primaria(direccion string, name string, size int, fit strin
 	}
 
 	// Abro el archivo para lectura con opcion a modificar
-	f, err := os.OpenFile(aux_path, os.O_RDWR, 0660)
+	f, err := os.OpenFile(direccion, os.O_RDWR, 0660)
 
 	// ERROR
 	if err != nil {
-		msg_error(err)
+		fmt.Println("[ERROR] No existe un disco duro con ese nombre...")
 	} else {
-		// Procede a leer el archivo
+		// Bandera para ver si hay una particion disponible
 		band_particion := false
+		// Valor del numero de particion
 		num_particion := 0
 
-		// Calculo del tamano de struct en bytes
+		// Calculo del tamaño de struct en bytes
 		mbr2 := struct_a_bytes(mbr_empty)
 		sstruct := len(mbr2)
 
 		// Lectrura del archivo binario desde el inicio
 		lectura := make([]byte, sstruct)
-		_, err = f.ReadAt(lectura, 0)
-
-		// ERROR
-		if err != nil && err != io.EOF {
-			msg_error(err)
-		}
+		f.Seek(0, os.SEEK_SET)
+		f.Read(lectura)
 
 		// Conversion de bytes a struct
 		master_boot_record := bytes_a_struct_mbr(lectura)
-
-		// ERROR
-		if err != nil {
-			msg_error(err)
-		}
 
 		// Si el disco esta creado
 		if master_boot_record.Mbr_tamano != empty {
@@ -755,30 +704,37 @@ func crear_particion_primaria(direccion string, name string, size int, fit strin
 				s_part_start = strings.Trim(s_part_start, "\x00")
 
 				// Verifico si en las particiones hay espacio
-				if s_part_start == "-1" && band_particion == false {
+				if s_part_start == "-1" {
 					band_particion = true
 					num_particion = i
+					break
 				}
 			}
 
+			// Si hay una particion disponible
 			if band_particion {
 				espacio_usado := 0
+				s_part_size := ""
+				i_part_size := 0
+				s_part_status := ""
 
 				// Recorro las 4 particiones
 				for i := 0; i < 4; i++ {
 					// Obtengo el espacio utilizado
-					s_size := string(master_boot_record.Mbr_partition[i].Part_size[:])
+					s_part_size = string(master_boot_record.Mbr_partition[i].Part_size[:])
 					// Le quito los caracteres null
-					s_size = strings.Trim(s_size, "\x00")
-					i_size, err := strconv.Atoi(s_size)
+					s_part_size = strings.Trim(s_part_size, "\x00")
+					i_part_size, _ = strconv.Atoi(s_part_size)
 
-					// ERROR
-					if err != nil {
-						msg_error(err)
+					// Obtengo el status de la particion
+					s_part_status = string(master_boot_record.Mbr_partition[i].Part_status[:])
+					// Le quito los caracteres null
+					s_part_status = strings.Trim(s_part_status, "\x00")
+
+					if s_part_status != "1" {
+						// Le sumo el valor al espacio
+						espacio_usado += i_part_size
 					}
-
-					// Le sumo el valor al espacio
-					espacio_usado += i_size
 				}
 
 				/* Tamaño del disco */
@@ -787,32 +743,313 @@ func crear_particion_primaria(direccion string, name string, size int, fit strin
 				s_tamaño_disco := string(master_boot_record.Mbr_tamano[:])
 				// Le quito los caracteres null
 				s_tamaño_disco = strings.Trim(s_tamaño_disco, "\x00")
-				i_tamaño_disco, err2 := strconv.Atoi(s_tamaño_disco)
-
-				// ERROR
-				if err2 != nil {
-					msg_error(err)
-				}
+				i_tamaño_disco, _ := strconv.Atoi(s_tamaño_disco)
 
 				espacio_disponible := i_tamaño_disco - espacio_usado
 
 				fmt.Println("[ESPACIO DISPONIBLE] ", espacio_disponible, " Bytes")
 				fmt.Println("[ESPACIO NECESARIO] ", size_bytes, " Bytes")
-				fmt.Println(num_particion)
 
 				// Verifico que haya espacio suficiente
 				if espacio_disponible >= size_bytes {
+					// Verifico si no existe una particion con ese nombre
+					if !existe_particion(direccion, nombre) {
+						// Antes de comparar limpio la cadena
+						s_dsk_fit := string(master_boot_record.Dsk_fit[:])
+						s_dsk_fit = strings.Trim(s_dsk_fit, "\x00")
 
-					fmt.Println("Si cumple!")
-					return
+						/*  Primer Ajuste  */
+						if s_dsk_fit == "f" {
+							copy(master_boot_record.Mbr_partition[num_particion].Part_type[:], "p")
+							copy(master_boot_record.Mbr_partition[num_particion].Part_fit[:], aux_fit)
+
+							// Si esta iniciando
+							if num_particion == 0 {
+								// Guardo el inicio de la particion y dejo un espacio de separacion
+								mbr_empty_byte := struct_a_bytes(mbr_empty)
+								copy(master_boot_record.Mbr_partition[num_particion].Part_start[:], strconv.Itoa(int(binary.Size(mbr_empty_byte))+1))
+							} else {
+								// Obtengo el inicio de la particion anterior
+								s_part_start_ant := string(master_boot_record.Mbr_partition[num_particion-1].Part_start[:])
+								// Le quito los caracteres null
+								s_part_start_ant = strings.Trim(s_part_start_ant, "\x00")
+								i_part_start_ant, _ := strconv.Atoi(s_part_start_ant)
+
+								// Obtengo el tamaño de la particion anterior
+								s_part_size_ant := string(master_boot_record.Mbr_partition[num_particion-1].Part_size[:])
+								// Le quito los caracteres null
+								s_part_size_ant = strings.Trim(s_part_size_ant, "\x00")
+								i_part_size_ant, _ := strconv.Atoi(s_part_size_ant)
+
+								copy(master_boot_record.Mbr_partition[num_particion].Part_start[:], strconv.Itoa(i_part_start_ant+i_part_size_ant+1))
+							}
+
+							copy(master_boot_record.Mbr_partition[num_particion].Part_size[:], strconv.Itoa(size_bytes))
+							copy(master_boot_record.Mbr_partition[num_particion].Part_status[:], "0")
+							copy(master_boot_record.Mbr_partition[num_particion].Part_name[:], nombre)
+
+							// Se guarda de nuevo el MBR
+
+							// Conversion de struct a bytes
+							mbr_byte := struct_a_bytes(master_boot_record)
+
+							// Se posiciona al inicio del archivo para guardar la informacion del disco
+							f.Seek(0, os.SEEK_SET)
+							f.Write(mbr_byte)
+
+							// Obtengo el inicio de la particion
+							s_part_start = string(master_boot_record.Mbr_partition[num_particion].Part_start[:])
+							// Le quito los caracteres null
+							s_part_start = strings.Trim(s_part_start, "\x00")
+							i_part_start, _ := strconv.Atoi(s_part_start)
+
+							// Se posiciona en el inicio de la particion
+							f.Seek(int64(i_part_start), os.SEEK_SET)
+
+							// Lo llena de unos
+							for i := 1; i < size_bytes; i++ {
+								f.Write([]byte{1})
+							}
+
+							fmt.Println("[SUCCES] La Particion primaria fue creada con exito!")
+						} else if s_dsk_fit == "b" {
+							/*  Mejor Ajuste  */
+							best_index := num_particion
+
+							// Variables para conversiones
+							s_part_start_act := ""
+							s_part_status_act := ""
+							s_part_size_act := ""
+							i_part_size_act := 0
+							s_part_start_best := ""
+							i_part_start_best := 0
+							s_part_start_best_ant := ""
+							i_part_start_best_ant := 0
+							s_part_size_best := ""
+							i_part_size_best := 0
+							s_part_size_best_ant := ""
+							i_part_size_best_ant := 0
+
+							for i := 0; i < 4; i++ {
+								// Obtengo el inicio de la particion actual
+								s_part_start_act = string(master_boot_record.Mbr_partition[i].Part_start[:])
+								// Le quito los caracteres null
+								s_part_start_act = strings.Trim(s_part_start_act, "\x00")
+
+								// Obtengo el size de la particion actual
+								s_part_status_act = string(master_boot_record.Mbr_partition[i].Part_status[:])
+								// Le quito los caracteres null
+								s_part_status_act = strings.Trim(s_part_status_act, "\x00")
+
+								// Obtengo la posicion de la particion actual
+								s_part_size_act = string(master_boot_record.Mbr_partition[i].Part_size[:])
+								// Le quito los caracteres null
+								s_part_size_act = strings.Trim(s_part_size_act, "\x00")
+								i_part_size_act, _ = strconv.Atoi(s_part_size_act)
+
+								if s_part_start_act == "-1" || (s_part_status_act == "1" && i_part_size_act >= size_bytes) {
+									if i != num_particion {
+										// Obtengo el tamaño de la particion del mejor indice
+										s_part_size_best = string(master_boot_record.Mbr_partition[best_index].Part_size[:])
+										// Le quito los caracteres null
+										s_part_size_best = strings.Trim(s_part_size_best, "\x00")
+										i_part_size_best, _ = strconv.Atoi(s_part_size_best)
+
+										// Obtengo la posicion de la particion actual
+										s_part_size_act = string(master_boot_record.Mbr_partition[i].Part_size[:])
+										// Le quito los caracteres null
+										s_part_size_act = strings.Trim(s_part_size_act, "\x00")
+										i_part_size_act, _ = strconv.Atoi(s_part_size_act)
+
+										if i_part_size_best > i_part_size_act {
+											best_index = i
+											break
+										}
+									}
+								}
+							}
+
+							// Primaria
+							copy(master_boot_record.Mbr_partition[best_index].Part_type[:], "p")
+							copy(master_boot_record.Mbr_partition[best_index].Part_fit[:], aux_fit)
+
+							// Si esta iniciando
+							if best_index == 0 {
+								// Guardo el inicio de la particion y dejo un espacio de separacion
+								mbr_empty_byte := struct_a_bytes(mbr_empty)
+								copy(master_boot_record.Mbr_partition[best_index].Part_start[:], strconv.Itoa(int(binary.Size(mbr_empty_byte))+1))
+							} else {
+								// Obtengo el inicio de la particion actual
+								s_part_start_best_ant = string(master_boot_record.Mbr_partition[best_index-1].Part_start[:])
+								// Le quito los caracteres null
+								s_part_start_best_ant = strings.Trim(s_part_start_best_ant, "\x00")
+								i_part_start_best_ant, _ = strconv.Atoi(s_part_start_best_ant)
+
+								// Obtengo el inicio de la particion actual
+								s_part_size_best_ant = string(master_boot_record.Mbr_partition[best_index-1].Part_size[:])
+								// Le quito los caracteres null
+								s_part_size_best_ant = strings.Trim(s_part_size_best_ant, "\x00")
+								i_part_size_best_ant, _ = strconv.Atoi(s_part_size_best_ant)
+
+								copy(master_boot_record.Mbr_partition[best_index].Part_start[:], strconv.Itoa(i_part_start_best_ant+i_part_size_best_ant))
+							}
+
+							copy(master_boot_record.Mbr_partition[best_index].Part_size[:], strconv.Itoa(size_bytes))
+							copy(master_boot_record.Mbr_partition[best_index].Part_status[:], "0")
+							copy(master_boot_record.Mbr_partition[best_index].Part_name[:], nombre)
+
+							// Se guarda de nuevo el MBR
+
+							// Conversion de struct a bytes
+							mbr_byte := struct_a_bytes(master_boot_record)
+
+							// Se posiciona al inicio del archivo para guardar la informacion del disco
+							f.Seek(0, os.SEEK_SET)
+							f.Write(mbr_byte)
+
+							// Obtengo el inicio de la particion best
+							s_part_start_best = string(master_boot_record.Mbr_partition[best_index].Part_start[:])
+							// Le quito los caracteres null
+							s_part_start_best = strings.Trim(s_part_start_best, "\x00")
+							i_part_start_best, _ = strconv.Atoi(s_part_start_best)
+
+							// Conversion de struct a bytes
+
+							// Se posiciona en el inicio de la particion
+							f.Seek(int64(i_part_start_best), os.SEEK_SET)
+
+							// Lo llena de unos
+							for i := 1; i < size_bytes; i++ {
+								f.Write([]byte{1})
+							}
+
+							fmt.Println("[SUCCES] La Particion primaria fue creada con exito!")
+						} else {
+							/*  Peor ajuste  */
+							worst_index := num_particion
+
+							// Variables para conversiones
+							s_part_start_act := ""
+							s_part_status_act := ""
+							s_part_size_act := ""
+							i_part_size_act := 0
+							s_part_start_worst := ""
+							i_part_start_worst := 0
+							s_part_start_worst_ant := ""
+							i_part_start_worst_ant := 0
+							s_part_size_worst := ""
+							i_part_size_worst := 0
+							s_part_size_worst_ant := ""
+							i_part_size_worst_ant := 0
+
+							for i := 0; i < 4; i++ {
+								// Obtengo el inicio de la particion actual
+								s_part_start_act = string(master_boot_record.Mbr_partition[i].Part_start[:])
+								// Le quito los caracteres null
+								s_part_start_act = strings.Trim(s_part_start_act, "\x00")
+
+								// Obtengo el size de la particion actual
+								s_part_status_act = string(master_boot_record.Mbr_partition[i].Part_status[:])
+								// Le quito los caracteres null
+								s_part_status_act = strings.Trim(s_part_status_act, "\x00")
+
+								// Obtengo la posicion de la particion actual
+								s_part_size_act = string(master_boot_record.Mbr_partition[i].Part_size[:])
+								// Le quito los caracteres null
+								s_part_size_act = strings.Trim(s_part_size_act, "\x00")
+								i_part_size_act, _ = strconv.Atoi(s_part_size_act)
+
+								if s_part_start_act == "-1" || (s_part_status_act == "1" && i_part_size_act >= size_bytes) {
+									if i != num_particion {
+										// Obtengo el tamaño de la particion del mejor indice
+										s_part_size_worst = string(master_boot_record.Mbr_partition[worst_index].Part_size[:])
+										// Le quito los caracteres null
+										s_part_size_worst = strings.Trim(s_part_size_worst, "\x00")
+										i_part_size_worst, _ = strconv.Atoi(s_part_size_worst)
+
+										// Obtengo la posicion de la particion actual
+										s_part_size_act = string(master_boot_record.Mbr_partition[i].Part_size[:])
+										// Le quito los caracteres null
+										s_part_size_act = strings.Trim(s_part_size_act, "\x00")
+										i_part_size_act, _ = strconv.Atoi(s_part_size_act)
+
+										if i_part_size_worst < i_part_size_act {
+											worst_index = i
+											break
+										}
+									}
+								}
+							}
+
+							// Particiones Primarias
+							copy(master_boot_record.Mbr_partition[worst_index].Part_type[:], "p")
+							copy(master_boot_record.Mbr_partition[worst_index].Part_fit[:], aux_fit)
+
+							// Se esta iniciando
+							if worst_index == 0 {
+								// Guardo el inicio de la particion y dejo un espacio de separacion
+								mbr_empty_byte := struct_a_bytes(mbr_empty)
+								copy(master_boot_record.Mbr_partition[worst_index].Part_start[:], strconv.Itoa(int(binary.Size(mbr_empty_byte))+1))
+							} else {
+								// Obtengo el inicio de la particion anterior
+								s_part_start_worst_ant = string(master_boot_record.Mbr_partition[worst_index-1].Part_start[:])
+								// Le quito los caracteres null
+								s_part_start_worst_ant = strings.Trim(s_part_start_worst_ant, "\x00")
+								i_part_start_worst_ant, _ = strconv.Atoi(s_part_start_worst_ant)
+
+								// Obtengo el tamaño de la particion anterior
+								s_part_size_worst_ant = string(master_boot_record.Mbr_partition[worst_index-1].Part_size[:])
+								// Le quito los caracteres null
+								s_part_size_worst_ant = strings.Trim(s_part_size_worst_ant, "\x00")
+								i_part_size_worst_ant, _ = strconv.Atoi(s_part_size_worst_ant)
+
+								copy(master_boot_record.Mbr_partition[worst_index].Part_start[:], strconv.Itoa(i_part_start_worst_ant+i_part_size_worst_ant))
+							}
+
+							copy(master_boot_record.Mbr_partition[worst_index].Part_size[:], strconv.Itoa(size_bytes))
+							copy(master_boot_record.Mbr_partition[worst_index].Part_status[:], "0")
+							copy(master_boot_record.Mbr_partition[worst_index].Part_name[:], nombre)
+
+							// Se guarda de nuevo el MBR
+
+							// Conversion de struct a bytes
+							mbr_byte := struct_a_bytes(master_boot_record)
+
+							// Escribe desde el inicio del archivo
+							f.Seek(0, os.SEEK_SET)
+							f.Write(mbr_byte)
+
+							// Obtengo el inicio de la particion best
+							s_part_start_worst = string(master_boot_record.Mbr_partition[worst_index].Part_start[:])
+							// Le quito los caracteres null
+							s_part_start_worst = strings.Trim(s_part_start_worst, "\x00")
+							i_part_start_worst, _ = strconv.Atoi(s_part_start_worst)
+
+							// Se posiciona en el inicio de la particion
+							f.Seek(int64(i_part_start_worst), os.SEEK_SET)
+
+							// Lo llena de unos
+							for i := 1; i < size_bytes; i++ {
+								f.Write([]byte{1})
+							}
+
+							fmt.Println("[SUCCES] La Particion primaria fue creada con exito!")
+						}
+					} else {
+						fmt.Println("[ERROR] Ya existe una particion creada con ese nombre...")
+					}
+				} else {
+					fmt.Println("[ERROR] La particion que desea crear excede el espacio disponible...")
 				}
-				fmt.Println("Particion primaria creada con exito.")
 			} else {
-				fmt.Println("No hay suficiente espacio.")
+				fmt.Println("[ERROR] La suma de particiones primarias y extendidas no debe exceder de 4 particiones...")
+				fmt.Println("[MENSAJE] Se recomienda eliminar alguna particion para poder crear otra particion primaria o extendida")
 			}
+		} else {
+			fmt.Println("[ERROR] el disco se encuentra vacio...")
 		}
+		f.Close()
 	}
-	f.Close()
 }
 
 func existe_particion(direccion string, nombre string) bool {
@@ -1007,32 +1244,39 @@ func struct_a_bytes(p interface{}) []byte {
 	return buf.Bytes()
 }
 
+// Verifica o crea la ruta para el disco duro
 func crear_disco(ruta string) {
 	aux, err := filepath.Abs(ruta)
 
+	// ERROR
 	if err != nil {
 		msg_error(err)
 	}
 
+	// Crea el directiorio de forma recursiva
 	cmd1 := exec.Command("/bin/sh", "-c", "sudo mkdir -p '"+filepath.Dir(aux)+"'")
 	cmd1.Dir = "/"
-	_, err1 := cmd1.Output()
+	_, err = cmd1.Output()
 
-	if err1 != nil {
+	// ERROR
+	if err != nil {
 		msg_error(err)
 	}
 
+	// Da los permisos al directorio
 	cmd2 := exec.Command("/bin/sh", "-c", "sudo chmod -R 777 '"+filepath.Dir(aux)+"'")
 	cmd2.Dir = "/"
-	_, err2 := cmd2.Output()
+	_, err = cmd2.Output()
 
-	if err2 != nil {
+	// ERROR
+	if err != nil {
 		msg_error(err)
 	}
 
+	// Verifica si existe la ruta para el archivo
 	if _, err := os.Stat(filepath.Dir(aux)); errors.Is(err, os.ErrNotExist) {
 		if err != nil {
-			fmt.Println("No se pudo crear el disco...")
+			fmt.Println("[FAILURE] No se pudo crear el disco...")
 		}
 	}
 }
