@@ -802,34 +802,17 @@ func crear_particion_primaria(direccion string, name string, size int, fit strin
 
 				// Verifico que haya espacio suficiente
 				if espacio_disponible >= size_bytes {
+
 					fmt.Println("Si cumple!")
-					newPartition := partition{
-						Part_status: [100]byte{'1'}, // Marcar la partición como activa
-						Part_type:   [100]byte{'P'}, // Tipo de partición primaria
-						Part_fit:    [100]byte{},    // Ajuste de la partición
-						Part_start:  [100]byte{'0'}, // Determinar el inicio de la partición (aquí deberías calcularlo)
-						Part_size:   [100]byte{'0'}, // Tamaño de la partición (aquí deberías establecerlo)
-						Part_name:   [100]byte{},
-					}
-
-					copy(newPartition.Part_fit[:], []byte(fit)[:len(newPartition.Part_fit)])
-					copy(newPartition.Part_name[:], []byte(name)[:len(newPartition.Part_name)])
-					master_boot_record.Mbr_partition[num_particion] = newPartition
-
-					mbr_bytes := struct_a_bytes(master_boot_record)
-					_, err = f.WriteAt(mbr_bytes, 0)
-					if err != nil {
-						msg_error(err)
-						return
-					}
-					fmt.Println("Particion primaria creada con exito.")
-				} else {
-					fmt.Println("No hay suficiente espacio.")
+					return
 				}
+				fmt.Println("Particion primaria creada con exito.")
+			} else {
+				fmt.Println("No hay suficiente espacio.")
 			}
 		}
-		f.Close()
 	}
+	f.Close()
 }
 
 func existe_particion(direccion string, nombre string) bool {
