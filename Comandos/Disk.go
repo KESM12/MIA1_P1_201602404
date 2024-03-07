@@ -21,11 +21,6 @@ func ValidarDatosMKDISK(tokens []string) {
 	unit := ""
 	band_error := false
 
-	// Obtenemos la letra del abecedario según el contador global diskCounter
-	letter := string(rune('A' + diskCounter))
-	// Formateamos dinámicamente la ruta del archivo de disco usando fmt.Sprintf
-	path := fmt.Sprintf("/home/taro/Escritorio/MIA/P1/%s.dsk", letter)
-
 	for i := 0; i < len(tokens); i++ {
 		token := tokens[i]
 		tk := strings.Split(token, "=")
@@ -74,13 +69,28 @@ func ValidarDatosMKDISK(tokens []string) {
 		Error("MKDISK", "valores en parametro unit no esperados")
 		return
 	} else {
-		crearArchivo(size, fit, unit, path)
+		// Obtenemos la letra del abecedario según el contador global diskCounter
+		letter := string(rune('A' + diskCounter))
+		// Formateamos dinámicamente la ruta del archivo de disco usando fmt.Sprintf
+		val_path := fmt.Sprintf("/home/taro/Escritorio/MIA/P1/%s.dsk", letter)
+
+		// Incrementamos el contador de discos solo si el archivo no existe
+		if _, err := os.Stat(val_path); os.IsNotExist(err) {
+			diskCounter++
+		} else {
+			// Si el archivo ya existe, avanzamos al siguiente disco
+			diskCounter++
+			letter = string(rune('A' + diskCounter))
+			val_path = fmt.Sprintf("/home/taro/Escritorio/MIA/P1/%s.dsk", letter)
+		}
+		crearArchivo(size, fit, unit, val_path)
 	}
 }
 
 func crearArchivo(s string, f string, u string, path string) { //MAKEFILE
 	var disco = Structs.NewMBR()
 	size, err := strconv.Atoi(s)
+
 	if err != nil {
 		Error("MKDISK", "Size debe ser un número entero")
 		return
