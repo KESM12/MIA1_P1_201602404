@@ -16,6 +16,7 @@ import (
 var diskCounter = 0
 
 func ValidarDatosMKDISK(tokens []string) {
+
 	size := ""
 	fit := ""
 	unit := ""
@@ -28,25 +29,25 @@ func ValidarDatosMKDISK(tokens []string) {
 			if fit == "" {
 				fit = tk[1]
 			} else {
-				Error("", "parametro fit repetido ")
+				fmt.Println("parametro fit repetido ")
 				return
 			}
 		} else if Comparar(tk[0], "size") {
 			if size == "" {
 				size = tk[1]
 			} else {
-				Error(" ", "Parametro size repetido.")
+				fmt.Println("Parametro size repetido.")
 				return
 			}
 		} else if Comparar(tk[0], "unit") {
 			if unit == "" {
 				unit = tk[1]
 			} else {
-				Error("MKDISK", "parametro U repetido en el comando: "+tk[0])
+				fmt.Println("parametro U repetido en el comando: " + tk[0])
 				return
 			}
 		} else {
-			Error(" ", "No se esperaba este parametro: "+tk[0])
+			fmt.Println("No se esperaba este parametro: " + tk[0])
 			return
 		}
 	}
@@ -60,28 +61,28 @@ func ValidarDatosMKDISK(tokens []string) {
 		return
 	}
 	if size == "" {
-		Error("MKDISK", "se requiere parametro Size para este comando")
+		fmt.Println("Se requiere el parametro size.")
 		return
 	} else if !Comparar(fit, "BF") && !Comparar(fit, "FF") && !Comparar(fit, "WF") {
-		Error("MKDISK", "valores en parametro fit no esperados")
+		fmt.Println("Se requiere el parametro fit.")
 		return
 	} else if !Comparar(unit, "k") && !Comparar(unit, "m") {
-		Error("MKDISK", "valores en parametro unit no esperados")
+		fmt.Println("Se requiere el parametro unit.")
 		return
 	} else {
 		// Obtenemos la letra del abecedario según el contador global diskCounter
 		letter := string(rune('A' + diskCounter))
 		// Formateamos dinámicamente la ruta del archivo de disco usando fmt.Sprintf
-		val_path := fmt.Sprintf("/home/taro/Escritorio/MIA/P1/%s.dsk", letter)
-
+		val_path := fmt.Sprintf("/home/taro/go/src/MIA1_P1_201602404/MIA/P1/%s.dsk", letter)
 		// Incrementamos el contador de discos solo si el archivo no existe
 		if _, err := os.Stat(val_path); os.IsNotExist(err) {
 			diskCounter++
 		} else {
 			// Si el archivo ya existe, avanzamos al siguiente disco
-			diskCounter++
 			letter = string(rune('A' + diskCounter))
-			val_path = fmt.Sprintf("/home/taro/Escritorio/MIA/P1/%s.dsk", letter)
+			//val_path = fmt.Sprintf("/home/taro/Escritorio/MIA/P1/%s.dsk", letter)
+			val_path = fmt.Sprintf("/home/taro/go/src/MIA1_P1_201602404/MIA/P1/%s.dsk", letter)
+			diskCounter++
 		}
 		crearArchivo(size, fit, unit, val_path)
 	}
@@ -92,11 +93,11 @@ func crearArchivo(s string, f string, u string, path string) { //MAKEFILE
 	size, err := strconv.Atoi(s)
 
 	if err != nil {
-		Error("MKDISK", "Size debe ser un número entero")
+		fmt.Println("Size debe ser un número entero")
 		return
 	}
 	if size <= 0 {
-		Error("MKDISK", "Size debe ser mayor a 0")
+		fmt.Println("Size debe ser mayor a 0")
 		return
 	}
 	if Comparar(u, "M") {
@@ -122,10 +123,6 @@ func crearArchivo(s string, f string, u string, path string) { //MAKEFILE
 		_ = os.Remove(path)
 	}
 
-	if !strings.HasSuffix(path, "dsk") {
-		Error("MKDISK", "Extensión de archivo no válida.")
-		return
-	}
 	carpeta := ""
 	direccion := strings.Split(path, "/")
 
@@ -139,7 +136,7 @@ func crearArchivo(s string, f string, u string, path string) { //MAKEFILE
 	file, err := os.Create(path)
 	defer file.Close()
 	if err != nil {
-		Error("MKDISK", "No se pudo crear el disco.")
+		fmt.Println("No se puedo crear el disco....")
 		return
 	}
 	var vacio int8 = 0
@@ -165,61 +162,53 @@ func crearArchivo(s string, f string, u string, path string) { //MAKEFILE
 	EscribirBytes(file, binario3.Bytes())
 	file.Close()
 	nombreDisco := strings.Split(path, "/")
-	Mensaje("MKDISK", "¡Disco \""+nombreDisco[len(nombreDisco)-1]+"\" creado correctamente!")
-	diskCounter++
+	fmt.Println("Disco " + nombreDisco[len(nombreDisco)-1] + " creado exitosamente.")
+	//diskCounter++
 }
 
 func RMDISK(tokens []string) {
-
 	if len(tokens) > 1 {
-		Error("RMDISK", "Parametro -driveletter esperado...")
+		fmt.Println("Solo se acepta el parametro -driveletter.")
 		return
 	}
 
 	driveletter := ""
-
+	val_path := ""
 	for i := 0; i < len(tokens); i++ {
 		token := tokens[i]
 		tk := strings.Split(token, "=")
 		if Comparar(tk[0], "driveletter") {
 			if driveletter == "" {
 				driveletter = tk[1]
+				val_path = fmt.Sprintf("/home/taro/go/src/MIA1_P1_201602404/MIA/P1/%s.dsk", driveletter)
 			} else {
-				Error("RMDISK", "Parametro driveletter repetido en el comando: "+tk[0])
+				fmt.Println("Parametro obligatorio, no encontrado.")
 				return
 			}
 		} else {
-			Error("RMDISK", "no se esperaba el parametro "+tk[0])
+			fmt.Println("Parametro incorrecto " + tk[0])
 			return
 		}
 	}
-
-	driveletter = fmt.Sprintf("/home/taro/Escritorio/MIA/P1/%s.dsk", driveletter)
-
-	if driveletter == "" {
-		Error("RMDISK", "se requiere parametro Path para este comando")
+	if val_path == "" {
+		fmt.Println("Parametro obligatorio, no encontrado.")
 		return
 	} else {
-		if !ArchivoExiste(driveletter) {
-			Error("RMDISK", "No se encontró el disco en la ruta indicada.")
+		if !ArchivoExiste(val_path) {
+			fmt.Println("Disco no encontrado en la ruta: " + val_path)
 			return
 		}
-		if !strings.HasSuffix(driveletter, "dsk") {
-			Error("RMDISK", "Extensión de archivo no válida.")
-			return
-		}
-		if Confirmar("¿Desea eliminar el disco: " + driveletter + " ?") {
-			err := os.Remove(driveletter)
+		if Confirmar("Desea eliminar el disco: " + driveletter + " ?") {
+			err := os.Remove(val_path)
 			if err != nil {
-				Error("RMDISK", "Error al intentar eliminar el archivo. :c")
+				fmt.Println("No se pudo eliminar el disco.")
 				return
 			}
-			Mensaje("RMDISK", "Disco ubicado en "+driveletter+", ha sido eliminado exitosamente. :D")
+			fmt.Println("Disco ubicado en: " + val_path + ", eliminado correctamente")
 			return
 		} else {
-			Mensaje("RMDISK", "Eliminación del disco "+driveletter+", cancelada exitosamente. :D")
+			fmt.Println("Eliminación cancelada.")
 			return
 		}
 	}
-
 }

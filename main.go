@@ -27,8 +27,8 @@ func main() {
 		eleccion = strings.TrimLeft(eleccion, comando)
 		tokens := SepararTokens(eleccion)
 		funciones(comando, tokens)
-		fmt.Println("\tPresione Enter para continuar....")
-		fmt.Scanln()
+		fmt.Println("Comando ejecutado correctamente.")
+		//fmt.Scanln()
 	}
 }
 
@@ -123,14 +123,14 @@ func funciones(token string, tks []string) {
 		} else if Comandos.Comparar(token, "RMDISK") {
 			Comandos.RMDISK(tks)
 		} else if Comandos.Comparar(token, "FDISK") {
-			//Comandos.ValidarDatosFDISK(tks)
+			Comandos.ValidarDatosFDISK(tks)
 		} else if Comandos.Comparar(token, "MOUNT") {
 			//Comandos.ValidarDatosMOUNT(tks)
 		} else if Comandos.Comparar(token, "MKFS") {
 			//	Comandos.ValidarDatosMKFS(tks)
 		} else if Comandos.Comparar(token, "LOGIN") {
 			if logued {
-				Comandos.Error("LOGIN", "Ya hay un usuario en línea.")
+				fmt.Println("LOGIN", "Ya hay un usuario en línea.")
 				return
 			} else {
 				fmt.Print("hola1")
@@ -138,7 +138,7 @@ func funciones(token string, tks []string) {
 			}
 		} else if Comandos.Comparar(token, "LOGOUT") {
 			if !logued {
-				Comandos.Error("LOGOUT", "Inicie sesión, por favor.")
+				fmt.Println("LOGOUT", "Inicie sesión, por favor.")
 				return
 			} else {
 				fmt.Print("hola1")
@@ -146,7 +146,7 @@ func funciones(token string, tks []string) {
 			}
 		} else if Comandos.Comparar(token, "MKGRP") {
 			if !logued {
-				Comandos.Error("MKGRP", "Inicie sesión, por favor.")
+				fmt.Println("MKGRP", "Inicie sesión, por favor.")
 				return
 			} else {
 				fmt.Print("hola1")
@@ -154,7 +154,7 @@ func funciones(token string, tks []string) {
 			}
 		} else if Comandos.Comparar(token, "RMGRP") {
 			if !logued {
-				Comandos.Error("RMGRP", "Inicie sesión, por favor.")
+				fmt.Println("RMGRP", "Inicie sesión, por favor.")
 				return
 			} else {
 				fmt.Print("hola1")
@@ -162,7 +162,7 @@ func funciones(token string, tks []string) {
 			}
 		} else if Comandos.Comparar(token, "MKUSER") {
 			if !logued {
-				Comandos.Error("MKUSER", "Inicie sesión, por favor.")
+				fmt.Println("MKUSER", "Inicie sesión, por favor.")
 				return
 			} else {
 				fmt.Print("hola1")
@@ -170,14 +170,20 @@ func funciones(token string, tks []string) {
 			}
 		} else if Comandos.Comparar(token, "RMUSR") {
 			if !logued {
-				Comandos.Error("RMUSER", "Inicie sesión, por favor.")
+				fmt.Println("RMUSER", "Inicie sesión, por favor.")
 				return
 			} else {
 				fmt.Print("hola1")
 				//Comandos.ValidarDatosUsers(tks, "RM")
 			}
+		} else if Comandos.Comparar(token, "PAUSE") {
+			var pause string
+			fmt.Println("Presione \"enter\" para continuar...", " ")
+			fmt.Scanln(&pause)
+			return
+			//continue
 		} else {
-			Comandos.Error("ANALIZADOR", "No se reconoce el comando \""+token+"\"")
+			fmt.Println("ANALIZADOR", "No se reconoce el comando \""+token+"\"")
 		}
 	}
 }
@@ -191,7 +197,7 @@ func FuncionExec(tokens []string) {
 		}
 	}
 	if path == "" {
-		Comandos.Error("EXEC", "Se requiere el parámetro \"path\" para este comando")
+		fmt.Println("EXEC", "Se requiere el parámetro \"path\" para este comando")
 		return
 	}
 	Exec(path)
@@ -210,11 +216,11 @@ func Exec(path string) {
 		if texto != "" {
 			if Comandos.Comparar(tk, "pause") {
 				var pause string
-				Comandos.Mensaje("Presione \"enter\" para continuar...", " ")
+				fmt.Println("Presione \"enter\" para continuar...", " ")
 				fmt.Scanln(&pause)
 				continue
 			} else if string(texto[0]) == "#" {
-				Comandos.Mensaje("COMENTARIO", texto)
+				fmt.Println("COMENTARIO", texto)
 				continue
 			}
 			texto = strings.TrimLeft(texto, tk)

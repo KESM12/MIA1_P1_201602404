@@ -18,21 +18,11 @@ func Comparar(a string, b string) bool {
 	return false
 }
 
-func Error(op string, mensaje string) {
-	//fmt.Println("\tERROR: " + op + "\n\tTIPO: " + mensaje)
-	fmt.Println("")
-}
-
-func Mensaje(op string, mensaje string) {
-	//fmt.Println("\tCOMANDO: " + op + "\n\tTIPO: " + mensaje)
-	fmt.Println("")
-}
-
 func Confirmar(mensaje string) bool {
 	fmt.Println(mensaje + " (y/n)")
 	var respuesta string
 	fmt.Scanln(&respuesta)
-	return Comparar(respuesta, "y")
+	return Comparar(respuesta, "y") || Comparar(respuesta, "s")
 }
 
 func ArchivoExiste(ruta string) bool {
@@ -55,7 +45,7 @@ func leerDisco(path string) *Structs.MBR {
 	file, err := os.Open(strings.ReplaceAll(path, "\"", ""))
 	defer file.Close()
 	if err != nil {
-		Error("FDISK", "Error al abrir el archivo")
+		fmt.Println("Error al abrir el archivo")
 		return nil
 	}
 	file.Seek(0, 0)
@@ -63,7 +53,7 @@ func leerDisco(path string) *Structs.MBR {
 	buffer := bytes.NewBuffer(data)
 	err_ := binary.Read(buffer, binary.BigEndian, &m)
 	if err_ != nil {
-		Error("FDSIK", "Error al leer el archivo")
+		fmt.Println("Error al leer el archivo")
 		return nil
 	}
 	var mDir *Structs.MBR = &m
