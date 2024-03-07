@@ -9,14 +9,6 @@ import (
 	"strconv"
 	"strings"
 	"unsafe"
-	// "MIA1_P1_201602404/Structs"
-	// "bytes"
-	// "encoding/binary"
-	// "fmt"
-	// "os"
-	// "strconv"
-	// "strings"
-	// "unsafe"
 )
 
 type Transition struct {
