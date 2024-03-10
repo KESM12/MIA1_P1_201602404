@@ -8,7 +8,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"unicode"
 	"unsafe"
 )
 
@@ -24,17 +23,18 @@ type ParticionMontada struct {
 	Letra  byte
 	Estado byte
 	Nombre [20]byte
+	Id     [4]byte
 }
 
 var alfabeto = []byte{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'}
 
 func ValidarDatosMOUNT(context []string) {
-	fmt.Println(context)
+	//fmt.Println(context)
 
 	name := ""
 	driveletter := ""
 	val_path := ""
-
+	fmt.Println(val_path)
 	for i := 0; i < len(context); i++ {
 		current := context[i]
 		comando := strings.Split(current, "=")
@@ -53,8 +53,8 @@ func ValidarDatosMOUNT(context []string) {
 	listaMount(driveletter)
 }
 
-func mount(p string, n string, d string) {
-	file, error_ := os.Open(p)
+func mount(path string, name string, driveletter string) {
+	file, error_ := os.Open(path)
 	if error_ != nil {
 		fmt.Println("No se ha podido abrir el archivo.")
 		return
@@ -72,59 +72,37 @@ func mount(p string, n string, d string) {
 	}
 	file.Close()
 
-	particion := BuscarParticiones(disk, n, p)
+	particion := BuscarParticiones(disk, name, path)
 	if particion.Part_type == 'E' || particion.Part_type == 'L' {
 		var nombre [16]byte
-		copy(nombre[:], n)
-		if particion.Part_name == nombre && particion.Part_type == 'E' {
-			fmt.Println("No se puede montar una partición extendida.")
+		copy(nombre[:], []byte(name))
+		if particion.Part_name == nombre && particion.Part_type == 'E' || particion.Part_type == 'L' {
+			fmt.Println("No se puede montar una partición extendida, ni lógica.")
 			return
-		} else {
-			ebrs := GetLogicas(*particion, p)
-			encontrada := false
-			if len(ebrs) != 0 {
-				for i := 0; i < len(ebrs); i++ {
-					ebr := ebrs[i]
-					nombreebr := ""
-					for j := 0; j < len(ebr.Part_name); j++ {
-						if ebr.Part_name[j] != 0 {
-							nombreebr += string(ebr.Part_name[j])
-						}
-					}
-
-					if Comparar(nombreebr, n) && ebr.Part_status == '1' {
-						encontrada = true
-						n = nombreebr
-						break
-					} else if nombreebr == n && ebr.Part_status == '0' {
-						fmt.Println("No se puede montar una partición Lógica eliminada.")
-						return
-					}
-				}
-				if !encontrada {
-					fmt.Println("No se encontró la partición Lógica.")
-					return
-				}
-			}
+		}
+		encontrada := false
+		if !encontrada {
+			fmt.Println("No se encontró la partición Lógica.")
+			return
 		}
 	}
 	for i := 0; i < 99; i++ {
 		var ruta [150]byte
-		copy(ruta[:], p)
+		copy(ruta[:], path)
 		if DiscMont[i].Path == ruta {
 			for j := 0; j < 26; j++ {
 				var nombre [20]byte
-				copy(nombre[:], n)
+				copy(nombre[:], name)
 				if DiscMont[i].Particiones[j].Nombre == nombre {
-					fmt.Println("Ya se ha montado la partición " + n)
+					fmt.Println("Ya se ha montado la partición " + name)
 					return
 				}
 				if DiscMont[i].Particiones[j].Estado == 0 {
 					DiscMont[i].Particiones[j].Estado = 1
 					DiscMont[i].Particiones[j].Letra = alfabeto[j]
-					copy(DiscMont[i].Particiones[j].Nombre[:], n)
-					re := string(d) + strconv.Itoa(i+1) + string("04")
-					fmt.Println("Se ha realizado correctamente el mount -id = " + re)
+					copy(DiscMont[i].Particiones[j].Nombre[:], name)
+					re := string(driveletter) + strconv.Itoa(i+1)
+					fmt.Println("Se ha realizado correctamente el mount -id = " + re + string("04"))
 					return
 				}
 			}
@@ -133,15 +111,14 @@ func mount(p string, n string, d string) {
 	for i := 0; i < 99; i++ {
 		if DiscMont[i].Estado == 0 {
 			DiscMont[i].Estado = 1
-			copy(DiscMont[i].Path[:], p)
+			copy(DiscMont[i].Path[:], path)
 			for j := 0; j < 26; j++ {
 				if DiscMont[i].Particiones[j].Estado == 0 {
 					DiscMont[i].Particiones[j].Estado = 1
-					DiscMont[i].Particiones[j].Letra = alfabeto[j]
-					copy(DiscMont[i].Particiones[j].Nombre[:], n)
-
-					re := string(d) + strconv.Itoa(i+1) + string("04")
-					fmt.Println("se ha realizado correctamente el mount -id= " + re)
+					DiscMont[i].Particiones[j].Letra = alfabeto[2]
+					copy(DiscMont[i].Particiones[j].Nombre[:], name)
+					re := string(driveletter) + strconv.Itoa(i+1)
+					fmt.Println("Se ha realizado correctamente el mount -id = " + re + string("04"))
 					return
 				}
 			}
@@ -150,10 +127,11 @@ func mount(p string, n string, d string) {
 }
 
 func GetMount(comando string, id string, p *string) Structs.Particion {
-	if !(len(id) == 4 && id[0] >= 'A' && id[0] <= 'Z' && unicode.IsDigit(rune(id[1])) && unicode.IsDigit(rune(id[2])) && unicode.IsDigit(rune(id[3]))) {
-		fmt.Println("El primer identificador no es válido.")
-		return Structs.Particion{}
-	}
+	fmt.Println(*p, "id:v")
+	// if !(id[0] == '7' && id[1] == '9') {
+	// 	fmt.Println("El primer identificador no es válido.")
+	// 	return Structs.Particion{}
+	// }
 	letra := id[len(id)-1]
 	id = strings.ReplaceAll(id, "79", "")
 	i, _ := strconv.Atoi(string(id[0] - 1))

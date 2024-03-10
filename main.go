@@ -126,6 +126,8 @@ func funciones(token string, tks []string) {
 			Comandos.ValidarDatosFDISK(tks)
 		} else if Comandos.Comparar(token, "MOUNT") {
 			Comandos.ValidarDatosMOUNT(tks)
+		} else if Comandos.Comparar(token, "UNMOUNT") {
+			//Comandos.ValidarDatosUnmount(tks)
 		} else if Comandos.Comparar(token, "MKFS") {
 			Comandos.ValidarDatosMKFS(tks)
 		} else if Comandos.Comparar(token, "LOGIN") {

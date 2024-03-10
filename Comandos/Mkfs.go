@@ -15,6 +15,7 @@ import (
 func ValidarDatosMKFS(context []string) {
 	id := ""
 	tipo := "Full"
+	fs := "ext2"
 
 	for i := 0; i < len(context); i++ {
 		token := context[i]
@@ -22,10 +23,17 @@ func ValidarDatosMKFS(context []string) {
 		if Comparar(tk[0], "id") {
 			id = tk[1]
 		} else if Comparar(tk[0], "type") {
-			if Comparar(tk[1], "fast") || Comparar(tk[1], "full") {
+			if Comparar(tk[1], "full") {
 				tipo = tk[1]
 			} else {
 				fmt.Println("El comando type debe tener valores específicos")
+				return
+			}
+		} else if Comparar(tk[0], "fs") {
+			if Comparar(tk[1], "2fs") || Comparar(tk[1], "3fs") {
+				tipo = tk[1]
+			} else {
+				fmt.Println("El comando fs debe tener valores específicos")
 				return
 			}
 		}
@@ -34,12 +42,14 @@ func ValidarDatosMKFS(context []string) {
 		fmt.Println("EL comando requiere el parámetro id obligatoriamente")
 		return
 	}
-	mkfs(id, tipo)
+
+	mkfs(id, tipo, fs)
 }
 
-func mkfs(id string, t string) {
+func mkfs(id string, t string, fs string) {
 	p := ""
 	particion := GetMount("MKFS", id, &p)
+	fmt.Println("particion: ", particion)
 	n := math.Floor(float64(particion.Part_size-int64(unsafe.Sizeof(Structs.SuperBloque{}))) / float64(4+unsafe.Sizeof(Structs.Inodos{})+3*unsafe.Sizeof(Structs.BloquesArchivos{})))
 
 	spr := Structs.NewSuperBloque()
