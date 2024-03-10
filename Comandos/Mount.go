@@ -97,7 +97,6 @@ func mount(p string, n string, d string) {
 							nombreebr += string(ebr.Part_name[j])
 						}
 					}
-
 					if Comparar(nombreebr, n) && ebr.Part_status == '1' {
 						encontrada = true
 						n = nombreebr
