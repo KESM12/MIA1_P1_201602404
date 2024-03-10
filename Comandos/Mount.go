@@ -138,7 +138,6 @@ func mount(p string, n string, d string) {
 					DiscMont[i].Particiones[j].Estado = 1
 					DiscMont[i].Particiones[j].Letra = alfabeto[j]
 					copy(DiscMont[i].Particiones[j].Nombre[:], n)
-
 					re := string(d) + strconv.Itoa(i+1) + string("04")
 					fmt.Println("se ha realizado correctamente el mount -id= " + re)
 					return
