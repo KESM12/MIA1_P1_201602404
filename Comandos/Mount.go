@@ -9,15 +9,6 @@ import (
 	"strconv"
 	"strings"
 	"unsafe"
-	// "Ejemplos_Proyecto/Structs"
-	// "bytes"
-	// "context"
-	// "encoding/binary"
-	// "fmt"
-	// "os"
-	// "strconv"
-	// "strings"
-	// "unsafe"
 )
 
 var DiscMont [99]DiscoMontado
@@ -37,6 +28,8 @@ type ParticionMontada struct {
 var alfabeto = []byte{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'}
 
 func ValidarDatosMOUNT(context []string) {
+	fmt.Println(context)
+
 	name := ""
 	driveletter := ""
 	val_path := ""
@@ -97,6 +90,7 @@ func mount(p string, n string, d string) {
 							nombreebr += string(ebr.Part_name[j])
 						}
 					}
+
 					if Comparar(nombreebr, n) && ebr.Part_status == '1' {
 						encontrada = true
 						n = nombreebr
