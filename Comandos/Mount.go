@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"unicode"
 	"unsafe"
 )
 
@@ -44,7 +45,7 @@ func ValidarDatosMOUNT(context []string) {
 			val_path = fmt.Sprintf("/home/taro/go/src/MIA1_P1_201602404/MIA/P1/%s.dsk", driveletter)
 		}
 	}
-	if val_path == "" || name == "" {
+	if driveletter == "" || name == "" {
 		fmt.Println("El comando MOUNT requiere parámetros obligatorios")
 		return
 	}
@@ -138,6 +139,7 @@ func mount(p string, n string, d string) {
 					DiscMont[i].Particiones[j].Estado = 1
 					DiscMont[i].Particiones[j].Letra = alfabeto[j]
 					copy(DiscMont[i].Particiones[j].Nombre[:], n)
+
 					re := string(d) + strconv.Itoa(i+1) + string("04")
 					fmt.Println("se ha realizado correctamente el mount -id= " + re)
 					return
@@ -148,7 +150,7 @@ func mount(p string, n string, d string) {
 }
 
 func GetMount(comando string, id string, p *string) Structs.Particion {
-	if !(id[0] == '7' && id[1] == '9') {
+	if !(len(id) == 4 && id[0] >= 'A' && id[0] <= 'Z' && unicode.IsDigit(rune(id[1])) && unicode.IsDigit(rune(id[2])) && unicode.IsDigit(rune(id[3]))) {
 		fmt.Println("El primer identificador no es válido.")
 		return Structs.Particion{}
 	}
