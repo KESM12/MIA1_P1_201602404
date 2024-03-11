@@ -135,8 +135,7 @@ func funciones(token string, tks []string) {
 				fmt.Println("LOGIN", "Ya hay un usuario en línea.")
 				return
 			} else {
-				fmt.Print("hola1")
-				//		logued = Comandos.ValidarDatosLOGIN(tks)
+				logued = Comandos.ValidarDatosLOGIN(tks)
 			}
 		} else if Comandos.Comparar(token, "LOGOUT") {
 			if !logued {
