@@ -15,7 +15,7 @@ import (
 func ValidarDatosMKFS(context []string) {
 	id := ""
 	tipo := "Full"
-	fs := "2fs"
+	fs := "ext2"
 
 	for i := 0; i < len(context); i++ {
 		token := context[i]
@@ -25,14 +25,13 @@ func ValidarDatosMKFS(context []string) {
 		} else if Comparar(tk[0], "type") {
 			if Comparar(tk[1], "full") {
 				tipo = tk[1]
-				fmt.Println("type: ", tipo)
 			} else {
 				fmt.Println("El comando type debe tener valores específicos")
 				return
 			}
 		} else if Comparar(tk[0], "fs") {
 			if Comparar(tk[1], "2fs") || Comparar(tk[1], "3fs") {
-				fs = tk[1]
+				tipo = tk[1]
 			} else {
 				fmt.Println("El comando fs debe tener valores específicos")
 				return
@@ -43,52 +42,29 @@ func ValidarDatosMKFS(context []string) {
 		fmt.Println("EL comando requiere el parámetro id obligatoriamente")
 		return
 	}
-	mkfs(id, fs)
+
+	mkfs(id, tipo, fs)
 }
 
-func mkfs(id string, fs string) {
-	letter := string(id[0])
-	p := fmt.Sprintf("/home/taro/go/src/MIA1_P1_201602404/MIA/P1/%s.dsk", letter)
+func mkfs(id string, t string, fs string) {
+	p := ""
 	particion := GetMount("MKFS", id, &p)
+	fmt.Println("particion: ", particion)
+	n := math.Floor(float64(particion.Part_size-int64(unsafe.Sizeof(Structs.SuperBloque{}))) / float64(4+unsafe.Sizeof(Structs.Inodos{})+3*unsafe.Sizeof(Structs.BloquesArchivos{})))
 
-	if fs == "2fs" {
-		n := math.Floor(float64(particion.Part_size-int64(unsafe.Sizeof(Structs.SuperBloque{}))) / float64(4+unsafe.Sizeof(Structs.Inodos{})+3*unsafe.Sizeof(Structs.BloquesArchivos{})))
-		spr := Structs.NewSuperBloque()
-		spr.S_magic = 0xEF53
-		spr.S_inode_size = int64(unsafe.Sizeof(Structs.Inodos{}))
-		spr.S_block_size = int64(unsafe.Sizeof(Structs.BloquesCarpetas{}))
-		spr.S_inodes_count = int64(n)
-		spr.S_free_inodes_count = int64(n)
-		spr.S_blocks_count = int64(3 * n)
-		spr.S_free_blocks_count = int64(3 * n)
-		fecha := time.Now().String()
-		copy(spr.S_mtime[:], fecha)
-		spr.S_mnt_count = spr.S_mnt_count + 1
-		spr.S_filesystem_type = 2
-		fmt.Println(p)
-		ext2(spr, particion, int64(n), p)
-	} else if fs == "3fs" {
-		n := math.Floor(float64(particion.Part_size-int64(unsafe.Sizeof(Structs.SuperBloque{})))) / float64(4+50+unsafe.Sizeof(Structs.Inodos{})+3*unsafe.Sizeof(Structs.BloquesArchivos{}))
-		spr := Structs.NewSuperBloque()
-		spr.S_magic = 0xEF53
-		spr.S_inode_size = int64(unsafe.Sizeof(Structs.Inodos{}))
-		spr.S_block_size = int64(unsafe.Sizeof(Structs.BloquesArchivos{}))
-		spr.S_inodes_count = int64(n)
-		spr.S_free_inodes_count = int64(n)
-		spr.S_blocks_count = int64(3 * n)
-		spr.S_free_blocks_count = int64(3 * n)
-		fecha := time.Now().String()
-		copy(spr.S_mtime[:], fecha)
-		spr.S_mnt_count = spr.S_mnt_count + 1
-		spr.S_filesystem_type = 3
-
-		fmt.Println(p)
-		ext3(spr, particion, int64(n), p)
-
-	} else {
-		fmt.Println("Error en el parametro fs.")
-	}
-
+	spr := Structs.NewSuperBloque()
+	spr.S_magic = 0xEF53
+	spr.S_inode_size = int64(unsafe.Sizeof(Structs.Inodos{}))
+	spr.S_block_size = int64(unsafe.Sizeof(Structs.BloquesCarpetas{}))
+	spr.S_inodes_count = int64(n)
+	spr.S_free_inodes_count = int64(n)
+	spr.S_blocks_count = int64(3 * n)
+	spr.S_free_blocks_count = int64(3 * n)
+	fecha := time.Now().String()
+	copy(spr.S_mtime[:], fecha)
+	spr.S_mnt_count = spr.S_mnt_count + 1
+	spr.S_filesystem_type = 2
+	ext2(spr, particion, int64(n), p)
 }
 
 func ext2(spr Structs.SuperBloque, p Structs.Particion, n int64, path string) {
@@ -97,12 +73,10 @@ func ext2(spr Structs.SuperBloque, p Structs.Particion, n int64, path string) {
 	spr.S_inode_start = spr.S_bm_block_start + (3 * n)
 	spr.S_block_start = spr.S_bm_inode_start + (n * int64(unsafe.Sizeof(Structs.Inodos{})))
 
-	fmt.Println("pathext2: ", path)
-
 	file, err := os.OpenFile(strings.ReplaceAll(path, "\"", ""), os.O_WRONLY, os.ModeAppend)
 	//file, err := os.Open(strings.ReplaceAll(path, "\"", ""))
 	if err != nil {
-		fmt.Println("No se ha encontrado el disco.1")
+		fmt.Println("No se ha encontrado el disco.")
 		return
 	}
 
@@ -163,7 +137,7 @@ func ext2(spr Structs.SuperBloque, p Structs.Particion, n int64, path string) {
 
 	file, err = os.Open(strings.ReplaceAll(path, "\"", ""))
 	if err != nil {
-		fmt.Println("No se ha encontrado el disco.2")
+		fmt.Println("No se ha encontrado el disco.")
 		return
 	}
 
@@ -217,7 +191,7 @@ func ext2(spr Structs.SuperBloque, p Structs.Particion, n int64, path string) {
 	file, err = os.OpenFile(strings.ReplaceAll(path, "\"", ""), os.O_WRONLY, os.ModeAppend)
 	//file, err = os.Open(strings.ReplaceAll(path, "\"", ""))
 	if err != nil {
-		fmt.Println("No se ha encontrado el disco.3")
+		fmt.Println("No se ha encontrado el disco.")
 		return
 	}
 	file.Seek(spr.S_bm_inode_start, 0)
@@ -257,86 +231,6 @@ func ext2(spr Structs.SuperBloque, p Structs.Particion, n int64, path string) {
 	var bin6 bytes.Buffer
 	binary.Write(&bin6, binary.BigEndian, fileb)
 	EscribirBytes(file, bin6.Bytes())
-
-	file.Close()
-
-	nombreParticion := ""
-	for i := 0; i < len(p.Part_name); i++ {
-		if p.Part_name[i] != 0 {
-			nombreParticion += string(p.Part_name[i])
-		}
-	}
-	fmt.Println("Se ha formateado la partición " + nombreParticion + " correctamente.")
-}
-
-func ext3(spr Structs.SuperBloque, p Structs.Particion, n int64, path string) {
-	spr.S_magic = 0xEF53 // Cambia el valor de S_magic a indicar que es un sistema de archivos ext3
-
-	// Calcula las ubicaciones de los diferentes componentes del sistema de archivos
-	spr.S_bm_inode_start = p.Part_start + int64(unsafe.Sizeof(Structs.SuperBloque{}))
-	spr.S_bm_block_start = spr.S_bm_inode_start + n
-	spr.S_inode_start = spr.S_bm_block_start + (3 * n)
-	spr.S_block_start = spr.S_inode_start + n
-
-	// Abre el archivo del disco
-	file, err := os.OpenFile(strings.ReplaceAll(path, "\"", ""), os.O_WRONLY, os.ModeAppend)
-	if err != nil {
-		fmt.Println("No se ha encontrado el disco.")
-		return
-	}
-
-	// Escribe el superbloque en la ubicación correspondiente
-	file.Seek(p.Part_start, 0)
-	var binario2 bytes.Buffer
-	binary.Write(&binario2, binary.BigEndian, spr)
-	EscribirBytes(file, binario2.Bytes())
-
-	// Escribe los bytes de mapa de bits de inodos y bloques vacíos
-	zero := '0'
-	file.Seek(spr.S_bm_inode_start, 0)
-	for i := 0; i < int(n); i++ {
-		var binarioZero bytes.Buffer
-		binary.Write(&binarioZero, binary.BigEndian, zero)
-		EscribirBytes(file, binarioZero.Bytes())
-	}
-
-	file.Seek(spr.S_bm_block_start, 0)
-	for i := 0; i < 3*int(n); i++ {
-		var binarioZero bytes.Buffer
-		binary.Write(&binarioZero, binary.BigEndian, zero)
-		EscribirBytes(file, binarioZero.Bytes())
-	}
-
-	// Escribe los inodos vacíos
-	inode := Structs.NewInodos()
-	inode.I_uid = -1
-	inode.I_gid = -1
-	inode.I_size = -1
-	for i := 0; i < len(inode.I_block); i++ {
-		inode.I_block[i] = -1
-	}
-	inode.I_type = -1
-	inode.I_perm = -1
-
-	file.Seek(spr.S_inode_start, 0)
-	for i := 0; i < int(n); i++ {
-		var binarioInodos bytes.Buffer
-		binary.Write(&binarioInodos, binary.BigEndian, inode)
-		EscribirBytes(file, binarioInodos.Bytes())
-	}
-
-	// Escribe los bloques de carpetas vacíos
-	folder := Structs.NewBloquesCarpetas()
-	for i := 0; i < len(folder.B_content); i++ {
-		folder.B_content[i].B_inodo = -1
-	}
-
-	file.Seek(spr.S_block_start, 0)
-	for i := 0; i < int(n); i++ {
-		var binarioFolder bytes.Buffer
-		binary.Write(&binarioFolder, binary.BigEndian, folder)
-		EscribirBytes(file, binarioFolder.Bytes())
-	}
 
 	file.Close()
 

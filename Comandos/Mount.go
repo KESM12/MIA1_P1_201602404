@@ -127,30 +127,32 @@ func mount(path string, name string, driveletter string) {
 }
 
 func GetMount(comando string, id string, p *string) Structs.Particion {
-
-	if !(len(id) == 4 && id[0] >= 'A' && id[0] <= 'Z' && id[1] >= '0' && id[1] <= '9' && id[2] == '0' && id[3] == '4') {
-		fmt.Println("El primer identificador no es válido.")
-		return Structs.Particion{}
-	}
+	fmt.Println(*p, "id:v")
+	// if !(id[0] == '7' && id[1] == '9') {
+	// 	fmt.Println("El primer identificador no es válido.")
+	// 	return Structs.Particion{}
+	// }
 	letra := id[len(id)-1]
-	id = strings.ReplaceAll(id, "04", "")
+	id = strings.ReplaceAll(id, "79", "")
 	i, _ := strconv.Atoi(string(id[0] - 1))
 	if i < 0 {
-		//fmt.Println("El primer identificador no es válido.")
+		fmt.Println("El primer identificador no es válido.")
 		return Structs.Particion{}
 	}
 	for j := 0; j < 26; j++ {
 		if DiscMont[i].Particiones[j].Estado == 1 {
 			if DiscMont[i].Particiones[j].Letra == letra {
+
 				path := ""
 				for k := 0; k < len(DiscMont[i].Path); k++ {
 					if DiscMont[i].Path[k] != 0 {
 						path += string(DiscMont[i].Path[k])
 					}
 				}
+
 				file, error := os.Open(strings.ReplaceAll(path, "\"", ""))
 				if error != nil {
-					fmt.Println("No se ha encontrado el disco4")
+					fmt.Println("No se ha encontrado el disco")
 					return Structs.Particion{}
 				}
 				disk := Structs.NewMBR()
@@ -179,6 +181,7 @@ func GetMount(comando string, id string, p *string) Structs.Particion {
 	}
 	return Structs.Particion{}
 }
+
 func listaMount(d string) {
 	fmt.Println("LISTADO DE MOUNTS")
 	for i := 0; i < 99; i++ {
