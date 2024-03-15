@@ -1,3 +1,3 @@
-module MIA1_P1_201602404
+module P1
 
 go 1.21.6
