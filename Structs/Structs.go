@@ -14,13 +14,13 @@ type MBR struct {
 }
 
 func PrintMBR(data MBR) {
-	fmt.Printf("CreationDate: %s, fit: %s, size: %d \n",
+	fmt.Printf("Data: %s, fit: %s, size: %d \n",
 		string(data.Mbr_fecha_creacion[:]),
 		string(data.Dsk_fit[:]),
 		data.Mbr_tamano)
 
 	for i := 0; i < 4; i++ {
-		fmt.Printf("Partition %d, Name: %s, Tipo: %s, Start: %d, Size: %d Status %s Correlativo %d ID %s CORRELATIVE: %d \n",
+		fmt.Printf("Partición %d, Nombre: %s, Tipo: %s, Inicio: %d, Tamaño: %d Estado %s Correlativo %d ID %s CORRELATIVE: %d \n",
 			i,
 			string(data.Mbr_particion[i].Part_name[:]),
 			string(data.Mbr_particion[i].Part_type[:]),
@@ -47,7 +47,7 @@ type Partition struct {
 }
 
 func PrintPartition(data Partition) {
-	fmt.Printf("Name: %s, type: %s, start: %d, size: %d, status: %s, id: %s\n",
+	fmt.Printf("Nombre: %s, Tipo: %s, Inicio: %d, Tamaño: %d, Estado: %s, Id: %s\n",
 		string(data.Part_name[:]),
 		string(data.Part_type[:]),
 		data.Part_start,
@@ -57,7 +57,7 @@ func PrintPartition(data Partition) {
 }
 
 func GetPartition(data Partition) string {
-	str := fmt.Sprintf("Name: %s, type: %s, start: %d, size: %d, status: %s, id: %s\n",
+	str := fmt.Sprintf("Nombre: %s, Tipo: %s, Inicio: %d, Tamaño: %d, Estado: %s, Id: %s\n",
 		string(data.Part_name[:]),
 		string(data.Part_type[:]),
 		data.Part_start,
@@ -78,7 +78,7 @@ type EBR struct {
 }
 
 func PrintEBR(data EBR) {
-	fmt.Printf("MOUNT: %s FIT: %s START: %d SIZE: %d NEXT: %d NAME: %s \n",
+	fmt.Printf("MOUNT: %s Fit: %s Inicio: %d Tamaño: %d Siguiente: %d Nombre: %s \n",
 		string(data.Part_mount[:]),
 		string(data.Part_fit[:]),
 		data.Part_start,
@@ -89,7 +89,7 @@ func PrintEBR(data EBR) {
 }
 
 func GetEBR(data EBR) string {
-	str := fmt.Sprintf("MOUNT: %s FIT: %s START: %d SIZE: %d NEXT: %d NAME: %s \n",
+	str := fmt.Sprintf("MOUNT: %s Fit: %s Inicio: %d Tamaño: %d Siguiente: %d Nombre: %s \n",
 		string(data.Part_mount[:]),
 		string(data.Part_fit[:]),
 		data.Part_start,
@@ -121,8 +121,6 @@ type Superblock struct {
 	S_block_start       int32
 }
 
-//  =============================================================
-
 type Inode struct {
 	I_uid   int32
 	I_gid   int32
@@ -135,13 +133,9 @@ type Inode struct {
 	I_perm  [3]byte
 }
 
-//  =============================================================
-
 type Fileblock struct {
 	B_content [64]byte
 }
-
-//  =============================================================
 
 type Content struct {
 	B_name  [12]byte
@@ -152,13 +146,9 @@ type Folderblock struct {
 	B_content [4]Content
 }
 
-//  =============================================================
-
 type Pointerblock struct {
 	B_pointers [16]int32
 }
-
-//  =============================================================
 
 type Content_J struct {
 	Operation [10]byte

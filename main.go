@@ -1,7 +1,7 @@
 package main
 
 import (
-	analyzer "P1/Analyzer"
+	analizar "P1/Analizador"
 	"bufio"
 	"fmt"
 	"os"
@@ -9,19 +9,20 @@ import (
 )
 
 func main() {
+
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		fmt.Println("******Kevin Secaida******")
-		fmt.Print("Ingrese un comando: ")
+		fmt.Println("\n***********Kevin Esuardo Secaida Molina ***********")
+		fmt.Print("Por favor, ingrese un comando: \t")
 		input, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Println("Error al leer la entrada:", err)
 			continue
 		}
+		input = strings.TrimSpace(input)
+		// Aquí puedes procesar el comando de Linux ingresado
+		analizar.Comandos(input)
 
-		input = strings.TrimSpace(input) //quitamos el salto de linea
-		//Para llamar una funcion desde otro archivo este debe ir en mayuscula al inicio
-		analyzer.Command(input)
 	}
 }
