@@ -1,0 +1,21 @@
+
+    digraph G {
+        graph [bgcolor="#F8F8F8"]; // Fondo gris claro
+        node [fontname="Helvetica,Arial,sans-serif", shape=record, style=filled, fillcolor="#FFFFFF", color="#000000", penwidth=2]; // Estilo de los nodos
+        edge [fontname="Helvetica,Arial,sans-serif", color="#555555", penwidth=2]; // Estilo de las aristas
+        concentrate=true; // Mejora la legibilidad
+        rankdir=TB; // Orientación de arriba hacia abajo
+        fontsize=12; // Tamaño de fuente
+
+        // Definir nodos
+        title [label="Reporte DISK C" fontsize=16 fontcolor="#333333"];
+        dsk[label=<
+            <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="#FFFFFF">
+                <tr><td colspan="2" bgcolor="#FFD700"><b>MBR</b></td></tr>
+                |Primaria\n40%|Primaria\n4%|Libre\n8%|Primaria\n8%|Primaria\n10%
+            </table>
+        >];
+
+        // Definir relaciones
+        title -> dsk [style=invis];
+    }

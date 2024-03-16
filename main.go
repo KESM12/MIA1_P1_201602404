@@ -14,7 +14,7 @@ func main() {
 
 	for {
 		fmt.Println("\n***********Kevin Esuardo Secaida Molina ***********")
-		fmt.Print("Comando: \t")
+		fmt.Print("Comando: ")
 		input, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Println("Error al leer la entrada:", err)

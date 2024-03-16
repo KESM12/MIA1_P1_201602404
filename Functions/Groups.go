@@ -136,7 +136,7 @@ func ProcessLOGOUT() {
 		searchIndex = 0
 		return
 	}
-	println("[ERROR] no hay una sesion activa")
+	println("Error no hay una sesion activa")
 }
 
 // MKGROUP
@@ -463,14 +463,14 @@ func MKUSR(user *string, pass *string, grp *string) {
 	searchIndex = 0
 	var nuevoUsuario = BuscarGrupo(user, pass, grp)
 	if nuevoUsuario == "" {
-		fmt.Println("[ERROR] No se encontro el grupo")
+		fmt.Println("Error No se encontro el grupo")
 		return
 	}
 	newContent := currentContent + nuevoUsuario
 
 	if len(newContent) > len(Fileblock.B_content) {
 		if blockIndex > int(len(crrInode.I_block)) {
-			fmt.Println("[ERROR] no hay mas bloques disponibles")
+			fmt.Println("Error no hay mas bloques disponibles")
 			return
 		}
 		blockIndex++

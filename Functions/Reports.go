@@ -12,6 +12,7 @@ import (
 )
 
 func ProcessREP(input string, name *string, path *string, id *string, ruta *string) {
+	fmt.Println("inputdsafa", input)
 	re := regexp.MustCompile(`-(\w+)=("[^"]+"|\S+)`)
 
 	matches := re.FindAllStringSubmatch(input, -1)
@@ -20,6 +21,7 @@ func ProcessREP(input string, name *string, path *string, id *string, ruta *stri
 		flagName := match[1]
 		flagValue := match[2]
 
+		// Delete quotes if they are present in the value
 		flagValue = strings.Trim(flagValue, "\"")
 
 		switch flagName {
@@ -29,14 +31,16 @@ func ProcessREP(input string, name *string, path *string, id *string, ruta *stri
 			*path = flagValue
 		case "id":
 			*id = flagValue
+		case "ruta":
+			*ruta = flagValue
 		default:
-			fmt.Println("Error no encontrado: ", flagName)
+			fmt.Println("Error faltan parametros.")
 		}
 	}
 }
 
 func GenerateReports(name *string, path *string, id *string, ruta *string) {
-
+	fmt.Println("Generando reporte:", *name, "en", *path, "de", *id, "en", *ruta)
 	switch *name {
 	case "mbr":
 		REPORT_MBR(id, path)

@@ -127,7 +127,7 @@ func ProcessRMDISK(input string, driveletter *string) {
 		case "driveletter":
 			*driveletter = flagValue
 		default:
-			fmt.Println("[Error] Bandera no encontrada: " + flagName)
+			fmt.Println("Bandera no encontrada: " + flagName)
 		}
 	}
 }
@@ -136,9 +136,8 @@ func Eliminar_ArchivoBin(driveletter *string) {
 	*driveletter = strings.ToUpper(*driveletter)
 	filename := "/home/taro/go/src/MIA1_P1_201602404/MIA/P1/" + *driveletter + ".dsk"
 	if _, err := os.Stat(filename); err == nil {
-		fmt.Print("¿Desea eliminar el archovo: ?" + *driveletter + ".dsk")
+		fmt.Println("Eliminar:" + *driveletter + ".dsk? (y/n)")
 		var input string
-		fmt.Print("Ingrese 'y' para continuar o 'n' para cancelar: ")
 		_, err := fmt.Scanln(&input)
 		if err != nil {
 			fmt.Println("Error al leer la entrada:", err)
@@ -156,7 +155,7 @@ func Eliminar_ArchivoBin(driveletter *string) {
 		}
 
 	} else if os.IsNotExist(err) {
-		fmt.Printf("El archivo %s.dsk no existe.\n", filename)
+		fmt.Printf("El archivo %s no existe.\n", filename)
 	} else {
 		fmt.Println("Error al verificar la existencia del archivo:", err)
 	}

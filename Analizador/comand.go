@@ -135,18 +135,18 @@ func MMkdisk(input string) {
 	functions.ProcesarElMKDISK(input, size, fit, unit)
 	// Para size
 	if *size <= 0 {
-		fmt.Println("[ERROR] El tamaño debe ser mayor que 0")
+		fmt.Println("Error El tamaño debe ser mayor que 0")
 		return
 	}
 	// Para fit
 	if *fit != "b" && *fit != "f" && *fit != "w" {
-		fmt.Println("[ERROR] El ajuste debe ser (bf/ff/wf)")
+		fmt.Println("Error El ajuste debe ser (bf/ff/wf)")
 		return
 	}
 
 	// Validar si es kilobytes o megabytes
 	if *unit != "k" && *unit != "m" {
-		fmt.Println("[ERROR] La unidad debe ser kilobytes o megabytes (k/m)")
+		fmt.Println("Error La unidad debe ser kilobytes o megabytes (k/m)")
 		return
 	}
 
@@ -162,10 +162,10 @@ func RRmdisk(input string) {
 	flag.Parse()
 	functions.ProcessRMDISK(input, driveletter)
 	if !functions.ValidarElDriveletter(*driveletter) {
-		fmt.Println("[ERROR] DriveLetter debe ser una letra")
+		fmt.Println("Error DriveLetter debe ser una letra")
 		return
 	} else if len(*driveletter) == 0 {
-		fmt.Println("[ERROR] DriveLetter no puede estar vacía")
+		fmt.Println("Error DriveLetter no puede estar vacía")
 		return
 	}
 	functions.Eliminar_ArchivoBin(driveletter)
@@ -178,40 +178,40 @@ func FFdisk(input string) {
 	functions.GestionarFDISK(input, size, driveletter, name, unit, type_, fit, delete, add, path)
 
 	if *size <= 0 && *delete != "full" && *add == 0 {
-		fmt.Println("[ERROR] El tamaño debe ser mayor que 0.")
+		fmt.Println("Error El tamaño debe ser mayor que 0.")
 		return
 	}
 
 	if !functions.ValidarElDriveletter(*driveletter) {
-		fmt.Println("[ERROR] DriveLetter debe ser una letra")
+		fmt.Println("Error DriveLetter debe ser una letra")
 		return
 	} else if len(*driveletter) == 0 {
-		fmt.Println("[ERROR] DriveLetter no puede estar vacío")
+		fmt.Println("Error DriveLetter no puede estar vacío")
 		return
 	}
 
 	if *fit != "b" && *fit != "f" && *fit != "w" {
-		fmt.Println("[ERROR] El ajuste debe ser (BF/FF/WF)")
+		fmt.Println("Error El ajuste debe ser (BF/FF/WF)")
 		return
 	}
 
 	if *unit != "b" && *unit != "k" && *unit != "m" {
-		fmt.Println("[ERROR] La unidad debe ser (B/K/M)")
+		fmt.Println("Error La unidad debe ser (B/K/M)")
 		return
 	}
 
 	if *type_ != "p" && *type_ != "e" && *type_ != "l" && *delete != "full" && *add == 0 {
-		fmt.Println("[ERROR] El tipo debe ser (P/E/L)")
+		fmt.Println("Error El tipo debe ser (P/E/L)")
 		return
 	}
 
 	if *delete != "" {
 		if *delete != "full" {
-			fmt.Println("[ERROR] Eliminar debe estar lleno")
+			fmt.Println("Error Eliminar debe estar lleno")
 			return
 		}
 		if *name == "" && *path == "" {
-			println("[ERROR] ecesitas ruta y nombre para eliminar")
+			println("Error ecesitas ruta y nombre para eliminar")
 			return
 		}
 	}
@@ -234,10 +234,10 @@ func MMount(input string) {
 	functions.ProcesarElMOUNT(input, driveletter, name)
 
 	if !functions.ValidarElDriveletter(*driveletter) {
-		fmt.Println("[ERROR] DriveLetter debe ser una letra")
+		fmt.Println("Error DriveLetter debe ser una letra")
 		return
 	} else if len(*driveletter) == 0 {
-		fmt.Println("[ERROR] DriveLetter no puede estar vacío")
+		fmt.Println("Error DriveLetter no puede estar vacío")
 		return
 	}
 	fmt.Println("Ejecutando MOUNT...")
@@ -252,7 +252,7 @@ func UUnMount(input string) {
 	functions.ProcesarElUNMOUNT(input, id)
 
 	if *id == "" {
-		println("[ERROR] Id es un campo obligatorio")
+		println("Error Id es un campo obligatorio")
 	}
 	fmt.Println("Ejecutando UNMOUNT...")
 	functions.ParticionesDelUnMOINT(id)
@@ -265,11 +265,11 @@ func MMkfs(input string) {
 	functions.ProcesarElMKFS(input, id, type_, fs)
 
 	if *id == "" {
-		println("[ERROR] la identificación no puede estar vacía")
+		println("Error la identificación no puede estar vacía")
 	}
 
 	if *fs != "2fs" && *fs != "3fs" {
-		println("[ERROR] fs debe ser 2fs o 3fs")
+		println("Error fs debe ser 2fs o 3fs")
 	}
 	fmt.Println("Ejecutando MKFS...")
 	functions.MKFS(id, type_, fs)
@@ -284,7 +284,7 @@ func LLogin(input string) {
 	functions.ProcessLOGIN(input, user, pass, id)
 
 	if *user == "" || *pass == "" || *id == "" {
-		println("[ERROR] campos incompletos")
+		println("Error campos incompletos")
 	}
 
 	functions.LOGIN(user, pass, id)
@@ -303,7 +303,7 @@ func MMkgrp(input string) {
 	functions.ProcessMKGRP(input, name)
 
 	if *name == "" {
-		println("[ERROR] el campo name no puede estar vacio")
+		println("Error el campo name no puede estar vacio")
 		return
 	}
 
@@ -316,7 +316,7 @@ func RRmgrp(input string) {
 	functions.ProcessMKGRP(input, name)
 
 	if *name == "" {
-		println("[ERROR] el campo name no puede estar vacio")
+		println("Error el campo name no puede estar vacio")
 		return
 	}
 
@@ -329,20 +329,20 @@ func MMkusr(input string) {
 	functions.ProcessMKUSR(input, user, pass, grp)
 
 	if len(*user) > 10 {
-		println("[ERROR] user no puede ser mayor a 10 caracteres")
+		println("Error user no puede ser mayor a 10 caracteres")
 		return
 	}
 	if len(*pass) > 10 {
-		println("[ERROR] password no puede ser mayor a 10 caracteres")
+		println("Error password no puede ser mayor a 10 caracteres")
 		return
 	}
 	if len(*grp) > 10 {
-		println("[ERROR] grupo no puede ser mayor a 10 caracteres")
+		println("Error grupo no puede ser mayor a 10 caracteres")
 		return
 	}
 
 	if *user == "" || *pass == "" || *grp == "" {
-		println("[ERROR] campos incompletos")
+		println("Error campos incompletos")
 		return
 	}
 
@@ -358,7 +358,7 @@ func RRmusr(input string) {
 	functions.ProcessRMUSR(input, user)
 
 	if *user == "" {
-		println("[ERROR] user no puede estar vacio")
+		println("Error user no puede estar vacio")
 		return
 	}
 
@@ -378,7 +378,7 @@ func MMkdir(input string) {
 	functions.ProcessMKDIR(input, path, r)
 
 	if *path == "" {
-		println("[ERROR] path no puede estar vacio")
+		println("Error path no puede estar vacio")
 		return
 	}
 
@@ -449,7 +449,7 @@ func execute(input string) {
 	flag.Parse()
 	functions.ProcessExecute(input, path)
 	if *path == "" {
-		fmt.Println("[ERROR] Path cannot be empty")
+		fmt.Println("Error Path no puede estar vacío.")
 		return
 	}
 	// Open bin file
@@ -480,13 +480,16 @@ func execute(input string) {
 // Reportes
 func rep(input string) {
 	flag.Parse()
-	fmt.Println("La ruta es: " + input)
+	fmt.Println("El comando es: " + input)
 	functions.ProcessREP(input, name, path, id, ruta)
-
+	fmt.Println("Namere: ", *name)
+	fmt.Println("Pathre: ", *path)
+	fmt.Println("Idre: ", *id)
+	fmt.Println("Rutare: ", *ruta)
 	if *name == "" || *path == "" || *id == "" {
-		println("[ERROR] Declaraciones incompletas")
+		println("Faltan parametros para el REP.")
 		return
 	}
-
+	fmt.Println("Ejecutando REP...")
 	functions.GenerateReports(name, path, id, ruta)
 }
