@@ -41,30 +41,38 @@ func ProcessREP(input string, name *string, path *string, id *string, ruta *stri
 }
 
 func GenerateReports(name *string, path *string, id *string, ruta *string) {
-	fmt.Println("Generando reporte:", *name, "en", *path, "de", *id, "en", *ruta)
+	//fmt.Println("Generando reporte:", *name, "en", *path, "de", *id, "en", *ruta)
 	switch *name {
 	case "mbr":
 		REPORT_MBR(id, path)
 	case "disk":
 		REPORT_DISK(id, path)
 	case "inode":
-		REPORT_INODE(id, path)
+		//REPORT_INODE(id, path)
+		fmt.Println("No se puede generar el reporte de inode.")
 	case "Journaling":
-		REPORT_JOURNALING()
+		//REPORT_JOURNALING()
+		fmt.Println("No se puede generar el reporte de Journaling.")
 	case "block":
-		REPORT_BLOCK(id, path)
+		//REPORT_BLOCK(id, path)
+		fmt.Println("No se puede generar el reporte de block.")
 	case "bm_inode":
-		REPORT_BM_INODE(id, path)
+		//REPORT_BM_INODE(id, path)
+		fmt.Println("No se puede generar el reporte de bm_inode.")
 	case "bm_block":
-		REPORT_BM_BLOCK(id, path)
+		//REPORT_BM_BLOCK(id, path)
+		fmt.Println("No se puede generar el reporte de bm_block.")
 	case "tree":
-		REPORT_TREE()
+		//REPORT_TREE()
+		fmt.Println("No se puede generar el reporte de tree.")
 	case "sb":
 		REPORT_SB(id, path)
 	case "file":
-		REPORT_FILE(id, path, ruta)
+		//REPORT_FILE(id, path, ruta)
+		fmt.Println("No se puede generar el reporte de file.")
 	case "ls":
-		REPORT_LS(id, path, ruta)
+		//REPORT_LS(id, path, ruta)
+		fmt.Println("No se puede generar el reporte de ls.")
 	default:
 		println("Reporte no reconocido:", *name)
 	}
@@ -236,7 +244,8 @@ func REPORT_MBR(id *string, path *string) {
 		return
 	}
 
-	pngFilePath := *path
+	//pngFilePath := *path
+	pngFilePath := fmt.Sprintf("/home/taro/go/src/MIA1_P1_201602404/MIA/Reportes/MBR_%d.png", uniqueNumber)
 	cmd := exec.Command("dot", "-Tpng", "-o", pngFilePath, dotFilePath)
 	err = cmd.Run()
 	if err != nil {
@@ -353,7 +362,7 @@ func REPORT_DISK(id *string, path *string) {
 	)
 
 	// Escribir el contenido en el archivo DOT
-	dotFilePath := fmt.Sprintf("/home/taro/go/src/MIA1_P1_201602404/MIA/Reportes/DISK%d.dot", uniqueNumber)
+	dotFilePath := fmt.Sprintf("/home/taro/go/src/MIA1_P1_201602404/MIA/Reportes/DISK_%d.dot", uniqueNumber)
 	dotFile, err := os.Create(dotFilePath)
 	if err != nil {
 		fmt.Println("Error al crear el archivo DOT:", err)
@@ -368,7 +377,8 @@ func REPORT_DISK(id *string, path *string) {
 	}
 
 	// Llamar a Graphviz para generar el gráfico
-	pngFilePath := *path
+	//pngFilePath := *path
+	pngFilePath := fmt.Sprintf("/home/taro/go/src/MIA1_P1_201602404/MIA/Reportes/DISK_%d.png", uniqueNumber)
 	cmd := exec.Command("dot", "-Tpng", "-o", pngFilePath, dotFilePath)
 	err = cmd.Run()
 	if err != nil {
@@ -379,30 +389,10 @@ func REPORT_DISK(id *string, path *string) {
 	structs.PrintMBR(TempMBR)
 }
 
-func REPORT_INODE(id *string, path *string) {
-
-}
-
-func REPORT_BLOCK(id *string, path *string) {
-
-}
-
-func REPORT_BM_INODE(id *string, path *string) {
-
-}
-
-func REPORT_BM_BLOCK(id *string, path *string) {
-
-}
-
-func REPORT_TREE() {
-
-}
-
 func REPORT_SB(id *string, path *string) {
 	letra := string((*id)[0])
 	letra = strings.ToUpper(letra)
-
+	uniqueNumber := time.Now().UnixNano()
 	filepath := "/home/taro/go/src/MIA1_P1_201602404/MIA/P1/" + letra + ".dsk"
 	file, err := os.Open(filepath)
 	if err != nil {
@@ -411,7 +401,7 @@ func REPORT_SB(id *string, path *string) {
 	defer file.Close()
 	var TempMBR structs.MBR
 	if err := utilities.ReadObject(file, &TempMBR, 0); err != nil {
-		fmt.Println("Error reading MBR:", err)
+		fmt.Println("Error al leer el MBR:", err)
 		return
 	}
 
@@ -428,54 +418,59 @@ func REPORT_SB(id *string, path *string) {
 	}
 
 	var tempSuperblock structs.Superblock
-	if err := utilities.ReadObject(file, &tempSuperblock, int64(TempMBR.Mbr_particion[index].Part_start)); err != nil {
-		fmt.Println("Error reading superblock:", err)
+
+	// Reposiciona el puntero de archivo al inicio de la partición
+	_, err = file.Seek(int64(TempMBR.Mbr_particion[index].Part_start), 0)
+	if err != nil {
+		fmt.Println("Error al reposicionar el puntero de archivo:", err)
+		return
+	}
+
+	// Ahora puedes leer el superbloque correctamente
+	if err := utilities.ReadObject(file, &tempSuperblock, 0); err != nil {
+		fmt.Println("Error al leer el superbloque:", err)
 		return
 	}
 
 	dotCode := fmt.Sprintf(`
     digraph G {
-        graph [bgcolor="#E6E6FA"];
-        node [fontname="Helvetica,Arial,sans-serif", shape=record, style=filled, fillcolor="#FFFFFF", color="#000000", penwidth=2];
-        edge [fontname="Helvetica,Arial,sans-serif", color="#000000", penwidth=2];
-        concentrate=true;
-        rankdir=TB;
-
-        title [label="Reporte SUPERBLOCK" shape=plaintext fontname="Helvetica,Arial,sans-serif" fontsize=16 fontcolor="#333333"];
-
-        sb[label=<
-            <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="#FFFFFF">
-                <tr><td colspan="2" bgcolor="#87CEFA"><b>Superblock</b></td></tr>
-                <tr><td><b>S_filesystem_type</b></td><td>%d</td></tr>
-                <tr><td><b>S_inodes_count</b></td><td>%d</td></tr>
-                <tr><td><b>S_blocks_count</b></td><td>%d</td></tr>
-                <tr><td><b>S_free_blocks_count</b></td><td>%d</td></tr>
-                <tr><td><b>S_free_inodes_count</b></td><td>%d</td></tr>
-                <tr><td><b>S_mtime</b></td><td>%s</td></tr>
-                <tr><td><b>S_umtime</b></td><td>%s</td></tr>
-                <tr><td><b>S_mnt_count</b></td><td>%d</td></tr>
-                <tr><td><b>S_magic</b></td><td>%d</td></tr>
-                <tr><td><b>S_inode_size</b></td><td>%d</td></tr>
-                <tr><td><b>S_block_size</b></td><td>%d</td></tr>
-                <tr><td><b>S_fist_ino</b></td><td>%d</td></tr>
-                <tr><td><b>S_first_blo</b></td><td>%d</td></tr>
-                <tr><td><b>S_bm_inode_start</b></td><td>%d</td></tr>
-                <tr><td><b>S_bm_block_start</b></td><td>%d</td></tr>
-                <tr><td><b>S_inode_start</b></td><td>%d</td></tr>
-                <tr><td><b>S_block_start</b></td><td>%d</td></tr>
-            </table>
-        >];
-
-        title -> sb [style=invis];
-    }
+		graph [bgcolor="#E6E6FA"];
+		node [fontname="Helvetica,Arial,sans-serif", shape=record, style=filled, fillcolor="#FFFFFF", color="#000000", penwidth=2];
+		edge [fontname="Helvetica,Arial,sans-serif", color="#000000", penwidth=2];
+		concentrate=true;
+		rankdir=TB;
+	
+		title [label="Reporte SUPERBLOCK" shape=plaintext fontname="Helvetica,Arial,sans-serif" fontsize=16 fontcolor="#333333"];
+	
+		sb[label=<
+			<table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="#FFFFFF">
+				<tr><td colspan="2" bgcolor="#87CEFA"><b>Superblock</b></td></tr>
+				<tr><td><b>S_filesystem_type</b></td><td bgcolor="#4682B4">%d</td></tr>
+				<tr><td><b>S_inodes_count</b></td><td bgcolor="#4682B4">%d</td></tr>
+				<tr><td><b>S_blocks_count</b></td><td bgcolor="#4682B4">%d</td></tr>
+				<tr><td><b>S_free_blocks_count</b></td><td bgcolor="#4682B4">%d</td></tr>
+				<tr><td><b>S_free_inodes_count</b></td><td bgcolor="#4682B4">%d</td></tr>
+				<tr><td><b>S_mnt_count</b></td><td bgcolor="#4682B4">%d</td></tr>
+				<tr><td><b>S_magic</b></td><td bgcolor="#4682B4">%d</td></tr>
+				<tr><td><b>S_inode_size</b></td><td bgcolor="#4682B4">%d</td></tr>
+				<tr><td><b>S_block_size</b></td><td bgcolor="#4682B4">%d</td></tr>
+				<tr><td><b>S_fist_ino</b></td><td bgcolor="#4682B4">%d</td></tr>
+				<tr><td><b>S_first_blo</b></td><td bgcolor="#4682B4">%d</td></tr>
+				<tr><td><b>S_bm_inode_start</b></td><td bgcolor="#4682B4">%d</td></tr>
+				<tr><td><b>S_bm_block_start</b></td><td bgcolor="#4682B4">%d</td></tr>
+				<tr><td><b>S_inode_start</b></td><td bgcolor="#4682B4">%d</td></tr>
+				<tr><td><b>S_block_start</b></td><td bgcolor="#4682B4">%d</td></tr>
+			</table>
+		>];
+	
+		title -> sb [style=invis];
+	}
 `,
 		int(tempSuperblock.S_filesystem_type),
 		int(tempSuperblock.S_inodes_count),
 		int(tempSuperblock.S_blocks_count),
 		int(tempSuperblock.S_free_blocks_count),
 		int(tempSuperblock.S_free_inodes_count),
-		tempSuperblock.S_mtime[:],
-		tempSuperblock.S_umtime[:],
 		int(tempSuperblock.S_mnt_count),
 		int(tempSuperblock.S_magic),
 		int(tempSuperblock.S_inode_size),
@@ -489,7 +484,7 @@ func REPORT_SB(id *string, path *string) {
 	)
 
 	// Escribir el contenido en el archivo DOT
-	dotFilePath := "/home/taro/go/src/MIA1_P1_201602404/MIA/Reportes/SB.dot" // Ruta donde deseas guardar el archivo DOT
+	dotFilePath := fmt.Sprintf("/home/taro/go/src/MIA1_P1_201602404/MIA/Reportes/SuperBloque_%d.dot", uniqueNumber)
 	dotFile, err := os.Create(dotFilePath)
 	if err != nil {
 		fmt.Println("Error al crear el archivo DOT:", err)
@@ -503,7 +498,9 @@ func REPORT_SB(id *string, path *string) {
 		return
 	}
 
-	pngFilePath := *path
+	//pngFilePath := *path
+	pngFilePath := fmt.Sprintf("/home/taro/go/src/MIA1_P1_201602404/MIA/Reportes/SuperBloque_%d.png", uniqueNumber)
+	fmt.Println("Generando gráfico del superbloque en", pngFilePath)
 	cmd := exec.Command("dot", "-Tpng", "-o", pngFilePath, dotFilePath)
 	err = cmd.Run()
 	if err != nil {
@@ -512,16 +509,4 @@ func REPORT_SB(id *string, path *string) {
 	}
 
 	fmt.Println("Reporte MBR, EBR generado en", pngFilePath)
-}
-
-func REPORT_FILE(id *string, path *string, ruta *string) {
-
-}
-
-func REPORT_LS(id *string, path *string, ruta *string) {
-
-}
-
-func REPORT_JOURNALING() {
-
 }
