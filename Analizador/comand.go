@@ -486,10 +486,11 @@ func rep(input string) {
 	fmt.Println("Pathre: ", *path)
 	fmt.Println("Idre: ", *id)
 	fmt.Println("Rutare: ", *ruta)
-	if *name == "" || *path == "" || *id == "" {
-		println("Faltan parametros para el REP.")
-		return
-	}
-	fmt.Println("Ejecutando REP...")
-	functions.GenerateReports(name, path, id, ruta)
+	// if *name == "" || *path == "" || *id == "" {
+	// 	println("Faltan parametros para el REP.")
+	// 	return
+	// }
+	path := "/home/taro/go/src/MIA1_P1_201602404/MIA/P1/Reportes/"
+	ruta := "/home/taro/go/src/MIA1_P1_201602404/MIA/P1/"
+	functions.GenerateReports(name, &path, id, &ruta)
 }

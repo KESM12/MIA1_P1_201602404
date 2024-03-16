@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+	"time"
 )
 
 func ProcessREP(input string, name *string, path *string, id *string, ruta *string) {
@@ -72,6 +73,7 @@ func GenerateReports(name *string, path *string, id *string, ruta *string) {
 func REPORT_MBR(id *string, path *string) {
 	letra := string((*id)[0])
 	letra = strings.ToUpper(letra)
+	uniqueNumber := time.Now().UnixNano()
 
 	filepath := "/home/taro/go/src/MIA1_P1_201602404/MIA/P1/" + letra + ".dsk"
 	file, err := os.Open(filepath)
@@ -184,41 +186,34 @@ func REPORT_MBR(id *string, path *string) {
 	}
 
 	dotCode := fmt.Sprintf(`
-    digraph G {
-        graph [bgcolor="#ffffff"]; // Fondo blanco
-        node [fontname="Helvetica,Arial,sans-serif", shape=plaintext, style=filled, fillcolor="#ffffff", color="#000000", penwidth=2]; // Estilo de los nodos
-        edge [fontname="Helvetica,Arial,sans-serif", color="#000000", penwidth=2]; // Estilo de las aristas
-        concentrate=true; // Mejora la legibilidad
-        rankdir=TB; // Orientación de arriba hacia abajo
-        fontsize=12; // Tamaño de fuente
-
-        // Definir nodos
-        title [label="Reporte MBR" fontsize=16];
-        mbr[label=<
-            <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="#ffffff">
-                <tr><td colspan="2" bgcolor="#dddddd"><b>MBR: %s.dsk</b></td></tr>
-                <tr><td><b>mbr_tamaño</b></td><td>%d</td></tr>
-                <tr><td><b>mbr_fecha_creacion</b></td><td>%s</td></tr>
-                <tr><td><b>mbr_disk_signature</b></td><td>%d</td></tr>
-                <tr><td colspan="2">%s</td></tr>
-            </table>
-        >];
-
-        title2 [label="Reporte EBR" fontsize=16];
-
-        ebr[label=<
-            <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="#ffffff">
-                <tr><td bgcolor="#dddddd"><b>EBR</b></td></tr>
-                <tr><td>%s</td></tr>
-            </table>
-        >];
-
-        // Definir relaciones
-        title -> mbr [style=invis];
-        mbr -> title2 [style=invis];
-        title2 -> ebr [style=invis];
-    }
-`,
+	digraph G {
+		fontname="Helvetica,Arial,sans-serif"
+		node [fontname="Helvetica,Arial,sans-serif", style="filled", color="lightblue", shape="record"]
+		edge [fontname="Helvetica,Arial,sans-serif"]
+		concentrate=True;
+		rankdir=TB;
+	
+		title [label="Reporte MBR" shape=plaintext fontname="Helvetica,Arial,sans-serif" color="darkorange1" fontcolor="darkorange4"];
+	
+		mbr[label="
+			{MBR: %s.dsk|
+				{mbr_tamaño|%d}
+				|{mbr_fecha_creacion|%s}
+				|{mbr_disk_signature|%d}
+				%s
+			}
+		"] [color="lightgoldenrod" fontcolor="darkgoldenrod"];
+	
+		title2 [label="Reporte EBR" shape=plaintext fontname="Helvetica,Arial,sans-serif" color="darkgreen" fontcolor="darkolivegreen1"];
+		
+		ebr[label="
+			{EBR%s}
+		"] [color="palegreen1" fontcolor="darkgreen"];
+	
+		title -> mbr [style=invis];
+		mbr -> title2[style=invis];
+		title2 -> ebr[style=invis];
+	}`,
 		letra,
 		TempMBR.Mbr_tamano,
 		TempMBR.Mbr_fecha_creacion,
@@ -227,7 +222,7 @@ func REPORT_MBR(id *string, path *string) {
 		strE,
 	)
 
-	dotFilePath := "/home/taro/go/src/MIA1_P1_201602404/MIA/Reportes/MBR.dot"
+	dotFilePath := fmt.Sprintf("/home/taro/go/src/MIA1_P1_201602404/MIA/Reportes/MBR_%d.dot", uniqueNumber)
 	dotFile, err := os.Create(dotFilePath)
 	if err != nil {
 		fmt.Println("Error al crear el archivo DOT:", err)
