@@ -109,23 +109,23 @@ func REPORT_MBR(id *string, path *string) {
 			EPartitionStart = int(partition.Part_start)
 		}
 	}
-
+	fmt.Print("EPartition", EPartition)
+	fmt.Print("EPartitionStart", EPartitionStart)
 	strP := ""
-	strE := ""
-
 	for _, partition := range TempMBR.Mbr_particion {
-		partNameClean := strings.Trim(string(partition.Part_name[:]), "\x00")
 		if partition.Part_correlative == 0 {
 			continue
 		} else {
+			// Construir la cadena para cada partición primaria
+			partNameClean := strings.Trim(string(partition.Part_name[:]), "\x00")
 			strP += fmt.Sprintf(`
-		|Particion %d
-		|{part_status|%s}
-		|{part_type|%s}
-		|{part_fit|%s}
-		|{part_start|%d}
-		|{part_size|%d}
-		|{part_name|%s}`,
+				|Particion %d
+				|{part_status|%s}
+				|{part_type|%s}
+				|{part_fit|%s}
+				|{part_start|%d}
+				|{part_size|%d}
+				|{part_name|%s}`,
 				partition.Part_correlative,
 				string(partition.Part_status[:]),
 				string(partition.Part_type[:]),
@@ -135,63 +135,9 @@ func REPORT_MBR(id *string, path *string) {
 				partNameClean,
 			)
 		}
-
-		//?EBR verificacion
-		if bytes.Equal(partition.Part_type[:], compareMBR.Mbr_particion[1].Part_type[:]) && EPartition {
-			var x = 0
-			for x < 1 {
-				var TempEBR structs.EBR
-				if err := utilities.ReadObject(file, &TempEBR, int64(EPartitionStart)); err != nil {
-					return
-				}
-
-				if EPartitionStart != 0 && TempEBR.Part_next != -1 {
-					partNameClean := strings.Trim(string(TempEBR.Part_name[:]), "\x00")
-					strE += fmt.Sprintf(`
-		|Particion Logica
-		|{part_status|%s}
-		|{part_next|%d}
-		|{part_fit|%s}
-		|{part_start|%d}
-		|{part_size|%d}
-		|{part_name|%s}`,
-						string(TempEBR.Part_mount[:]),
-						TempEBR.Part_next,
-						string(TempEBR.Part_fit[:]),
-						TempEBR.Part_start,
-						TempEBR.Part_s,
-						partNameClean,
-					)
-					print("fit logica")
-					println(string(TempEBR.Part_fit[:]))
-					EPartitionStart = int(TempEBR.Part_next)
-				} else {
-					print("fit logica")
-					println(string(TempEBR.Part_fit[:]))
-					partNameClean := strings.Trim(string(TempEBR.Part_name[:]), "\x00")
-					strE += fmt.Sprintf(`
-		|Particion Logica
-		|{part_status|%s}
-		|{part_next|%d}
-		|{part_fit|%s}
-		|{part_start|%d}
-		|{part_size|%d}
-		|{part_name|%s}`,
-						string(TempEBR.Part_mount[:]),
-						TempEBR.Part_next,
-						string(TempEBR.Part_fit[:]),
-						TempEBR.Part_start,
-						TempEBR.Part_s,
-						partNameClean,
-					)
-					strP += strE
-					x = 1
-				}
-			}
-
-		}
-
 	}
+
+	strE := ""
 
 	dotCode := fmt.Sprintf(`
 	digraph G {
@@ -340,23 +286,25 @@ func REPORT_DISK(id *string, path *string) {
 	}
 
 	dotCode := fmt.Sprintf(`
-    digraph G {
+	digraph G {
+		graph [bgcolor="#000000"]
 		fontname="Helvetica,Arial,sans-serif"
-	   node [fontname="Helvetica,Arial,sans-serif"]
-	   edge [fontname="Helvetica,Arial,sans-serif"]
-	   concentrate=True;
-	   rankdir=TB;
-	   node [shape=record];
-
-	   title [label="Reporte DISK %s" shape=plaintext fontname="Helvetica,Arial,sans-serif" color="#336699" style="bold"];
-
-		 dsk[label="
+		node [fontname="Helvetica,Arial,sans-serif", style="filled", fillcolor="#FFA500", color="#FFFFFF", fontcolor="#FFFFFF"]
+		edge [fontname="Helvetica,Arial,sans-serif", color="#FFFFFF"]
+		concentrate=True;
+		rankdir=TB;
+		node [shape=record, style="filled", fillcolor="#FFA500", fontcolor="#FFFFFF"]
+	
+		title [label="Reporte DISK %s" shape=plaintext fontname="Helvetica,Arial,sans-serif" color="#FFFFFF" style="bold"]
+	
+		dsk[label="
 		   {MBR}%s
 		   }
-	   " fontname="Courier New" color="#FF0000"];
-
-	   title -> dsk [style=invis];
-   }`,
+		" fontname="Courier New" color="#FFFFFF" fillcolor="#FFA500"]
+	
+		title -> dsk [style=invis]
+	}
+	`,
 		letra,
 		strP,
 	)
