@@ -61,7 +61,7 @@ func LOGIN(user *string, pass *string, id *string) {
 
 	var TempMBR structs.MBR
 	if err := utilities.ReadObject(file, &TempMBR, 0); err != nil {
-		fmt.Println("Error reading MBR:", err)
+		fmt.Println("Error al leer MBR:", err)
 		return
 	}
 
@@ -79,20 +79,20 @@ func LOGIN(user *string, pass *string, id *string) {
 
 	var tempSuperblock structs.Superblock
 	if err := utilities.ReadObject(file, &tempSuperblock, int64(TempMBR.Mbr_particion[index].Part_start)); err != nil {
-		fmt.Println("Error reading superblock:", err)
+		fmt.Println("Error al leer superblock:", err)
 		return
 	}
 
 	indexInode := int32(1)
 	var crrInode structs.Inode
 	if err := utilities.ReadObject(file, &crrInode, int64(tempSuperblock.S_inode_start+indexInode*int32(binary.Size(structs.Inode{})))); err != nil {
-		fmt.Println("Error reading inode:", err)
+		fmt.Println("Error al leer inode:", err)
 		return
 	}
 
 	var Fileblock structs.Fileblock
 	if err := utilities.ReadObject(file, &Fileblock, int64(tempSuperblock.S_block_start+crrInode.I_block[0]*int32(binary.Size(structs.Fileblock{}))+crrInode.I_block[0]*int32(binary.Size(structs.Fileblock{}))*int32(searchIndex))); err != nil {
-		fmt.Println("Error reading Fileblock:", err)
+		fmt.Println("Error al leer Fileblock:", err)
 		return
 	}
 	data := string(Fileblock.B_content[:])
@@ -423,7 +423,7 @@ func MKUSR(user *string, pass *string, grp *string) {
 
 	var TempMBR structs.MBR
 	if err := utilities.ReadObject(file, &TempMBR, 0); err != nil {
-		fmt.Println("Error reading MBR:", err)
+		fmt.Println("Error al leer MBR:", err)
 		return
 	}
 
@@ -441,20 +441,20 @@ func MKUSR(user *string, pass *string, grp *string) {
 
 	var tempSuperblock structs.Superblock
 	if err := utilities.ReadObject(file, &tempSuperblock, int64(TempMBR.Mbr_particion[index].Part_start)); err != nil {
-		fmt.Println("Error reading superblock:", err)
+		fmt.Println("Error al leer superblock:", err)
 		return
 	}
 
 	indexInode := int32(1)
 	var crrInode structs.Inode
 	if err := utilities.ReadObject(file, &crrInode, int64(tempSuperblock.S_inode_start+indexInode*int32(binary.Size(structs.Inode{})))); err != nil {
-		fmt.Println("Error reading inode:", err)
+		fmt.Println("Error al leer inode:", err)
 		return
 	}
 
 	var Fileblock structs.Fileblock
 	if err := utilities.ReadObject(file, &Fileblock, int64(tempSuperblock.S_block_start+crrInode.I_block[0]*int32(binary.Size(structs.Fileblock{}))+crrInode.I_block[0]*int32(binary.Size(structs.Fileblock{}))*int32(blockIndex))); err != nil {
-		fmt.Println("Error reading Fileblock:", err)
+		fmt.Println("Error al leer Fileblock:", err)
 		return
 	}
 
@@ -477,7 +477,7 @@ func MKUSR(user *string, pass *string, grp *string) {
 		var NEWFileblock structs.Fileblock
 		copy(NEWFileblock.B_content[:], nuevoUsuario)
 		if err := utilities.WriteObject(file, &NEWFileblock, int64(tempSuperblock.S_block_start+crrInode.I_block[0]*int32(binary.Size(structs.Fileblock{}))+crrInode.I_block[0]*int32(binary.Size(structs.Fileblock{}))*int32(blockIndex))); err != nil {
-			fmt.Println("Error reading Fileblock:", err)
+			fmt.Println("Error al leer Fileblock:", err)
 			return
 		}
 
@@ -532,7 +532,7 @@ func ProcessRMUSR(input string, user *string) {
 			case "user":
 				*user = flagValue
 			default:
-				fmt.Println("Error bandera no encontrada: " + flagName)
+				fmt.Println("Error parametro no encontrado: " + flagName)
 			}
 		}
 	} else {
@@ -649,20 +649,20 @@ func ImprimirBloques() {
 
 	var tempSuperblock structs.Superblock
 	if err := utilities.ReadObject(file, &tempSuperblock, int64(TempMBR.Mbr_particion[index].Part_start)); err != nil {
-		fmt.Println("Error reading superblock:", err)
+		fmt.Println("Error al leer superblock:", err)
 		return
 	}
 
 	indexInode := int32(1)
 	var crrInode structs.Inode
 	if err := utilities.ReadObject(file, &crrInode, int64(tempSuperblock.S_inode_start+indexInode*int32(binary.Size(structs.Inode{})))); err != nil {
-		fmt.Println("Error reading inode:", err)
+		fmt.Println("Error al leer inode:", err)
 		return
 	}
 
 	var Fileblock structs.Fileblock
 	if err := utilities.ReadObject(file, &Fileblock, int64(tempSuperblock.S_block_start+crrInode.I_block[0]*int32(binary.Size(structs.Fileblock{}))+crrInode.I_block[0]*int32(binary.Size(structs.Fileblock{}))*int32(searchIndex))); err != nil {
-		fmt.Println("Error reading Fileblock:", err)
+		fmt.Println("Error al leer Fileblock:", err)
 		return
 	}
 	fmt.Println("Fileblock " + fmt.Sprint(searchIndex))
@@ -692,7 +692,7 @@ func BuscarGrupo(user *string, pass *string, grp *string) string {
 
 	var TempMBR structs.MBR
 	if err := utilities.ReadObject(file, &TempMBR, 0); err != nil {
-		fmt.Println("Error reading MBR:", err)
+		fmt.Println("Error al leer MBR:", err)
 		return ""
 	}
 
@@ -710,20 +710,20 @@ func BuscarGrupo(user *string, pass *string, grp *string) string {
 
 	var tempSuperblock structs.Superblock
 	if err := utilities.ReadObject(file, &tempSuperblock, int64(TempMBR.Mbr_particion[index].Part_start)); err != nil {
-		fmt.Println("Error reading superblock:", err)
+		fmt.Println("Error al leer superblock:", err)
 		return ""
 	}
 
 	indexInode := int32(1)
 	var crrInode structs.Inode
 	if err := utilities.ReadObject(file, &crrInode, int64(tempSuperblock.S_inode_start+indexInode*int32(binary.Size(structs.Inode{})))); err != nil {
-		fmt.Println("Error reading inode:", err)
+		fmt.Println("Error al leer inode:", err)
 		return ""
 	}
 
 	var Fileblock structs.Fileblock
 	if err := utilities.ReadObject(file, &Fileblock, int64(tempSuperblock.S_block_start+crrInode.I_block[0]*int32(binary.Size(structs.Fileblock{}))+crrInode.I_block[0]*int32(binary.Size(structs.Fileblock{}))*int32(searchIndex))); err != nil {
-		fmt.Println("Error reading Fileblock:", err)
+		fmt.Println("Error al leer Fileblock:", err)
 		return ""
 	}
 	data := string(Fileblock.B_content[:])

@@ -35,7 +35,7 @@ func ProcessMKDIR(input string, path *string, r *bool) {
 			*r = true
 		case "path":
 		default:
-			fmt.Println("Error bandera no encontrada: " + flagName)
+			fmt.Println("Error parametro no encontrado: " + flagName)
 		}
 	}
 }
@@ -71,7 +71,7 @@ func MKDIR(path *string, r *bool) {
 	// Leer el superbloque
 	var tempSuperblock structs.Superblock
 	if err := utilities.ReadObject(file, &tempSuperblock, int64(TempMBR.Mbr_particion[index].Part_start)); err != nil {
-		fmt.Println("Error reading superblock:", err)
+		fmt.Println("Error al leer superblock:", err)
 		return
 	}
 }
@@ -100,7 +100,7 @@ func ProcessMKFILE(input string, path *string, r *bool, size *int, cont *string)
 		case "cont":
 			*cont = flagValue
 		default:
-			fmt.Println("Error bandera no encontrada: " + flagName)
+			fmt.Println("Error parametro no encontrado: " + flagName)
 		}
 	}
 }
@@ -146,7 +146,7 @@ func ProcessREMOVE(input string, path *string) {
 		case "path":
 			*path = flagValue
 		default:
-			fmt.Println("Error bandera no encontrada: " + flagName)
+			fmt.Println("Error parametro no encontrado: " + flagName)
 		}
 	}
 }
@@ -172,7 +172,7 @@ func ProcessEDIT(input string, path *string, cont *string) {
 		case "cont":
 			*cont = flagValue
 		default:
-			fmt.Println("Error bandera no encontrada: " + flagName)
+			fmt.Println("Error parametro no encontrado: " + flagName)
 		}
 	}
 }
@@ -198,7 +198,7 @@ func ProcessRENAME(input string, path *string, name *string) {
 		case "name":
 			*name = flagValue
 		default:
-			fmt.Println("Error bandera no encontrada: " + flagName)
+			fmt.Println("Error parametro no encontrado: " + flagName)
 		}
 	}
 }
@@ -224,7 +224,7 @@ func ProcessCOPY(input string, path *string, destino *string) {
 		case "destino":
 			*destino = flagValue
 		default:
-			fmt.Println("Error bandera no encontrada: " + flagName)
+			fmt.Println("Error parametro no encontrado: " + flagName)
 		}
 	}
 }
@@ -250,7 +250,7 @@ func ProcessMOVE(input string, path *string, destino *string) {
 		case "destino":
 			*destino = flagValue
 		default:
-			fmt.Println("Error bandera no encontrada: " + flagName)
+			fmt.Println("Error parametro no encontrado: " + flagName)
 		}
 	}
 }
@@ -276,7 +276,7 @@ func ProcessFIND(input string, path *string, destino *string) {
 		case "destino":
 			*destino = flagValue
 		default:
-			fmt.Println("Error bandera no encontrada: " + flagName)
+			fmt.Println("Error parametro no encontrado: " + flagName)
 		}
 	}
 }
@@ -304,7 +304,7 @@ func ProcessCHOWN(input string, path *string, user *string, r *bool) {
 		case "r":
 			*r = true
 		default:
-			fmt.Println("Error bandera no encontrada: " + flagName)
+			fmt.Println("Error parametro no encontrado: " + flagName)
 		}
 	}
 }
@@ -332,7 +332,7 @@ func ProcessCHMOD(input string, path *string, ugo *string, r *bool) {
 		case "r":
 			*r = true
 		default:
-			fmt.Println("Error bandera no encontrada: " + flagName)
+			fmt.Println("Error parametro no encontrado: " + flagName)
 		}
 	}
 }
