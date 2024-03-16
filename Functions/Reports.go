@@ -73,8 +73,8 @@ func GenerateReports(name *string, path *string, id *string, ruta *string) {
 func REPORT_MBR(id *string, path *string) {
 	letra := string((*id)[0])
 	letra = strings.ToUpper(letra)
-	uniqueNumber := time.Now().UnixNano()
 
+	uniqueNumber := time.Now().UnixNano()
 	filepath := "/home/taro/go/src/MIA1_P1_201602404/MIA/P1/" + letra + ".dsk"
 	file, err := os.Open(filepath)
 	if err != nil {
@@ -250,6 +250,7 @@ func REPORT_MBR(id *string, path *string) {
 func REPORT_DISK(id *string, path *string) {
 	letra := string((*id)[0])
 	letra = strings.ToUpper(letra)
+	uniqueNumber := time.Now().UnixNano()
 
 	filepath := "/home/taro/go/src/MIA1_P1_201602404/MIA/P1/" + letra + ".dsk"
 	file, err := os.Open(filepath)
@@ -331,32 +332,28 @@ func REPORT_DISK(id *string, path *string) {
 
 	dotCode := fmt.Sprintf(`
     digraph G {
-        graph [bgcolor="#F8F8F8"]; // Fondo gris claro
-        node [fontname="Helvetica,Arial,sans-serif", shape=record, style=filled, fillcolor="#FFFFFF", color="#000000", penwidth=2]; // Estilo de los nodos
-        edge [fontname="Helvetica,Arial,sans-serif", color="#555555", penwidth=2]; // Estilo de las aristas
-        concentrate=true; // Mejora la legibilidad
-        rankdir=TB; // Orientación de arriba hacia abajo
-        fontsize=12; // Tamaño de fuente
+		fontname="Helvetica,Arial,sans-serif"
+	   node [fontname="Helvetica,Arial,sans-serif"]
+	   edge [fontname="Helvetica,Arial,sans-serif"]
+	   concentrate=True;
+	   rankdir=TB;
+	   node [shape=record];
 
-        // Definir nodos
-        title [label="Reporte DISK %s" fontsize=16 fontcolor="#333333"];
-        dsk[label=<
-            <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="#FFFFFF">
-                <tr><td colspan="2" bgcolor="#FFD700"><b>MBR</b></td></tr>
-                %s
-            </table>
-        >];
+	   title [label="Reporte DISK %s" shape=plaintext fontname="Helvetica,Arial,sans-serif" color="#336699" style="bold"];
 
-        // Definir relaciones
-        title -> dsk [style=invis];
-    }
-`,
+		 dsk[label="
+		   {MBR}%s
+		   }
+	   " fontname="Courier New" color="#FF0000"];
+
+	   title -> dsk [style=invis];
+   }`,
 		letra,
 		strP,
 	)
 
 	// Escribir el contenido en el archivo DOT
-	dotFilePath := "/home/taro/go/src/MIA1_P1_201602404/MIA/Reportes/DISK.dot" // Ruta donde deseas guardar el archivo DOT
+	dotFilePath := fmt.Sprintf("/home/taro/go/src/MIA1_P1_201602404/MIA/Reportes/DISK%d.dot", uniqueNumber)
 	dotFile, err := os.Create(dotFilePath)
 	if err != nil {
 		fmt.Println("Error al crear el archivo DOT:", err)
