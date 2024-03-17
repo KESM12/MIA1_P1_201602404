@@ -73,7 +73,7 @@ func LOGIN(user *string, pass *string, id *string) {
 		}
 	}
 	if index == -1 {
-		fmt.Println("Partition not found")
+		fmt.Println("Partición no encontrada.")
 		return
 	}
 
@@ -435,7 +435,7 @@ func MKUSR(user *string, pass *string, grp *string) {
 		}
 	}
 	if index == -1 {
-		fmt.Println("Partition not found")
+		fmt.Println("Partición no encontrada.")
 		return
 	}
 
@@ -704,7 +704,7 @@ func BuscarGrupo(user *string, pass *string, grp *string) string {
 		}
 	}
 	if index == -1 {
-		fmt.Println("Partition not found")
+		fmt.Println("Partición no encontrada.")
 		return ""
 	}
 
