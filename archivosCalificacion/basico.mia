@@ -128,5 +128,3 @@ rep -id=C204 -Path=/home/taro/go/src/MIA1_P1_201602404/MIA/Reportes/reporte11.pn
 rep -id=C204 -Path=/home/taro/go/src/MIA1_P1_201602404/MIA/Reportes/reporte12.png -name=mbr #-> id6
 
 #execute -path=/home/taro/go/src/MIA1_P1_201602404/archivosCalificacion/basico.mia
-
-#rep -id=A104 -path=/home/taro/go/src/MIA1_P1_201602404/MIA/Reportes/reporte2.png  -name=disk #-> id2
