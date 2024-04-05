@@ -21,7 +21,6 @@ func main() {
 			continue
 		}
 		input = strings.TrimSpace(input)
-		// Aquí puedes procesar el comando de Linux ingresado
 		analizar.Comandos(input)
 
 	}
